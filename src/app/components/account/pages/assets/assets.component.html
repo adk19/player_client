@@ -1,0 +1,408 @@
+<div class="assets-page">
+  <div class="assets-shell">
+
+  <!-- ── Skeleton Loading ── -->
+  <ng-container *ngIf="loading">
+    <div class="page-header page-header--premium page-header--skeleton">
+      <div class="page-header-inner">
+        <div class="sk sk-title ph-sk-title"></div>
+        <div class="sk sk-btn ph-sk-btn"></div>
+      </div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card sk-card" *ngFor="let i of [1,2,3,4,5]">
+        <div class="sk sk-label"></div>
+        <div class="sk sk-value"></div>
+        <div class="sk sk-desc"></div>
+      </div>
+    </div>
+    <div class="grid-main">
+      <div class="panel">
+        <div class="panel-header"><div class="sk sk-label"></div></div>
+        <div class="panel-body">
+          <div class="sk-table-rows">
+            <div class="sk sk-row" *ngFor="let i of [1,2,3,4,5]"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="panel">
+          <div class="panel-header"><div class="sk sk-label"></div></div>
+          <div class="panel-body">
+            <div class="sk sk-wallet-block"></div>
+            <div class="sk sk-row" *ngFor="let i of [1,2,3]" style="margin-top:10px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="sk sk-label"></div></div>
+          <div class="panel-body">
+            <div class="sk sk-chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── Error ── -->
+  <div class="assets-error" *ngIf="!loading && error">
+    <div class="err-icon"><i class="fa-light fa-circle-exclamation"></i></div>
+    <div class="err-body">
+      <div class="err-title">Failed to load assets</div>
+      <div class="err-msg">{{ error }}</div>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Content ── -->
+  <ng-container *ngIf="!loading && !error && data">
+
+    <!-- Page Header -->
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account</div>
+          <h1 class="page-title">Assets</h1>
+          <p class="page-subtitle">Your balance, margin health, and open positions — at a glance.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Top Metrics ── -->
+    <div class="metrics-grid">
+
+      <div class="metric-card">
+        <div class="metric-label">Total Balance</div>
+        <div class="metric-value">{{ brandFmt(wallet?.balance) }}</div>
+        <div class="metric-desc">
+          <span>Available: <strong class="text-success">{{ brandFmt(wallet?.available) }}</strong></span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Equity</div>
+        <div class="metric-value">{{ brandFmt(margin?.equity) }}</div>
+        <div class="metric-desc">
+          <span>Margin Level: <strong [ngClass]="marginLevelClass">{{ fmt(margin?.margin_level, 2) }}%</strong></span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Used Margin</div>
+        <div class="metric-value text-warn">{{ brandFmt(margin?.used_margin) }}</div>
+        <div class="metric-desc">
+          <span>Available: {{ brandFmt(margin?.available_margin) }}</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Total Exposure</div>
+        <div class="metric-value">{{ brandFmt(margin?.total_exposure) }}</div>
+        <div class="metric-desc">
+          <span>{{ positions.length }} open position{{ positions.length !== 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Unrealized P&amp;L</div>
+        <div class="metric-value" [ngClass]="(margin?.unrealized_pnl ?? 0) >= 0 ? 'text-success' : 'text-danger'">
+          {{ (margin?.unrealized_pnl ?? 0) >= 0 ? '+' : '' }}{{ brandFmt(margin?.unrealized_pnl) }}
+        </div>
+        <div class="metric-desc">
+          <span>Realized: {{ brandFmt(0) }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Main Layout ── -->
+    <div class="grid-main">
+
+      <!-- Top: 3 cards (each 33.33%) -->
+      <div class="assets-top-cards">
+
+        <!-- Wallet Breakdown -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>Wallet Breakdown</span>
+          </div>
+          <div class="panel-body">
+            <div class="wallet-total">
+              <div class="wt-label">Total Asset</div>
+              <div class="wt-value">{{ brandFmt(wallet?.balance) }}</div>
+            </div>
+            <div class="wallet-bars">
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Reserved (Margin)</span>
+                  <span class="wb-val text-warn">{{ brandFmt(wallet?.reserved) }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill warn" [style.width.%]="walletUtilPct"></div>
+                </div>
+              </div>
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Unrealized P&amp;L</span>
+                  <span class="wb-val" [ngClass]="(margin?.unrealized_pnl ?? 0) >= 0 ? 'text-success' : 'text-danger'">
+                    {{ brandFmt(margin?.unrealized_pnl) }}
+                  </span>
+                </div>
+              </div>
+              <div class="wb-divider"></div>
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Available for Withdrawal</span>
+                  <span class="wb-val text-success">{{ brandFmt(wallet?.available) }}</span>
+                </div>
+              </div>
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Credit Limit</span>
+                  <span class="wb-val">{{ brandFmt(wallet?.credit_limit) }}</span>
+                </div>
+              </div>
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Lifetime Deposits</span>
+                  <span class="wb-val">{{ brandFmt(wallet?.lifetime_deposits) }}</span>
+                </div>
+              </div>
+              <div class="wb-item">
+                <div class="wb-row">
+                  <span class="wb-key">Lifetime Withdrawals</span>
+                  <span class="wb-val text-danger">{{ brandFmt(wallet?.lifetime_withdrawals) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Margin Health -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>Margin Health</span>
+            <span class="status" [ngClass]="'status-' + marginLevelClass">
+              {{ marginLevelClass === 'safe' ? 'Healthy' : marginLevelClass === 'warn' ? 'Warning' : 'Critical' }}
+            </span>
+          </div>
+          <div class="panel-body">
+            <div class="margin-level-display">
+              <div class="mld-val" [ngClass]="marginLevelClass">{{ fmt(margin?.margin_level, 2) }}%</div>
+              <div class="mld-label">Margin Level</div>
+            </div>
+            <div class="progress-bar big" style="margin:12px 0 16px;">
+              <div class="progress-fill" [ngClass]="marginLevelClass" [style.width.%]="marginUsedPct"></div>
+            </div>
+            <div class="margin-rows">
+              <div class="mr-row">
+                <span>Total Balance</span>
+                <span>{{ brandFmt(margin?.total_balance) }}</span>
+              </div>
+              <div class="mr-row">
+                <span>Used Margin</span>
+                <span class="text-danger">{{ brandFmt(margin?.used_margin) }}</span>
+              </div>
+              <div class="mr-row">
+                <span>Available Margin</span>
+                <span class="text-success">{{ brandFmt(margin?.available_margin) }}</span>
+              </div>
+              <div class="mr-row">
+                <span>Total Exposure</span>
+                <span>{{ brandFmt(margin?.total_exposure) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Positions Summary -->
+        <div class="panel">
+          <div class="panel-header"><span>Positions Summary</span></div>
+          <div class="panel-body">
+            <div class="pos-summary-grid">
+              <div class="ps-item">
+                <div class="ps-val">{{ positions.length }}</div>
+                <div class="ps-key">Total</div>
+              </div>
+              <div class="ps-item">
+                <div class="ps-val text-success">{{ buyCount }}</div>
+                <div class="ps-key">Buy</div>
+              </div>
+              <div class="ps-item">
+                <div class="ps-val text-danger">{{ sellCount }}</div>
+                <div class="ps-key">Sell</div>
+              </div>
+            </div>
+            <div class="margin-rows" style="margin-top:12px;">
+              <div class="mr-row">
+                <span>Total Unrealized P&amp;L</span>
+                <span [ngClass]="totalPnl >= 0 ? 'text-success' : 'text-danger'">
+                  {{ totalPnl >= 0 ? '+' : '' }}{{ brandFmt(totalPnl) }}
+                </span>
+              </div>
+              <div class="mr-row">
+                <span>Total Margin Used</span>
+                <span>{{ brandFmt(totalMarginUsed) }}</span>
+              </div>
+            </div>
+          </div>
+      </div>
+
+
+      </div>
+      <!-- Bottom: Open Positions (full width) -->
+      <div class="panel assets-positions">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span>Open Positions</span>
+            <span class="tag">{{ positions.length }}</span>
+          </div>
+          <div class="ps-filters">
+            <div class="filter-search">
+              <i class="fa-light fa-magnifying-glass"></i>
+              <input type="text" placeholder="Search symbol…" [(ngModel)]="filterSymbol" (ngModelChange)="onSearchChange()" />
+            </div>
+            <div class="filter-type">
+              <button [class.active]="filterType === null"  (click)="onTypeChange(null)">All</button>
+              <button [class.active]="filterType === 1"     (click)="onTypeChange(1)">Buy</button>
+              <button [class.active]="filterType === 2"     (click)="onTypeChange(2)">Sell</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="table-container desktop-only">
+          <table class="aws-table" *ngIf="positions.length; else noPos">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Qty</th>
+                <th>Entry Price</th>
+                <th>Current Price</th>
+                <th>Unrealized P&amp;L</th>
+                <th>Margin Used</th>
+                <th>Leverage</th>
+                <th>SL / TP</th>
+                <th>Opened At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of positions">
+                <td><span class="sym-name">{{ p.symbol }}</span></td>
+                <td>
+                  <span class="status" [ngClass]="p.position_type_id === 1 ? 'status-buy' : 'status-sell'">
+                    {{ positionSide(p) }}
+                  </span>
+                </td>
+                <td>{{ fmt(p.quantity, 4) }}</td>
+                <td>{{ fmt(p.entry_price) }}</td>
+                <td>{{ fmt(p.current_price) }}</td>
+                <td [ngClass]="positionPnlClass(p)">
+                  {{ p.unrealized_pl >= 0 ? '+' : '' }}{{ brandFmt(p.unrealized_pl) }}
+                </td>
+                <td>{{ brandFmt(p.margin_used) }}</td>
+                <td><span class="tag">{{ p.leverage_used }}x</span></td>
+                <td>
+                  <div class="sl-tp-cell">
+                    <span class="sl-val" *ngIf="p.stop_loss">SL {{ fmt(p.stop_loss) }}</span>
+                    <span class="tp-val" *ngIf="p.take_profit">TP {{ fmt(p.take_profit) }}</span>
+                    <span *ngIf="!p.stop_loss && !p.take_profit" class="muted">—</span>
+                  </div>
+                </td>
+                <td class="muted">{{ fmtDate(p.opened_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noPos>
+            <div class="no-data">
+              <i class="fa-light fa-inbox"></i>
+              <span>No open positions</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="mobile-cards mobile-only">
+          <ng-container *ngIf="positions.length; else noPosM">
+            <div class="pos-card" *ngFor="let p of positions">
+
+              <!-- Card Header: Symbol + Side + PnL -->
+              <div class="pos-card-header">
+                <div class="pos-card-header-left">
+                  <div class="pos-sym-wrap">
+                    <span class="pos-sym">{{ p.symbol }}</span>
+                    <span class="status" [ngClass]="p.position_type_id === 1 ? 'status-buy' : 'status-sell'">
+                      {{ positionSide(p) }}
+                    </span>
+                  </div>
+                  <span class="pos-opened-at muted">{{ fmtDate(p.opened_at) }}</span>
+                </div>
+                <div class="pos-card-header-right">
+                  <span class="pos-pnl-label muted">Unrealized P&L</span>
+                  <span class="pos-pnl" [ngClass]="positionPnlClass(p)">
+                    {{ p.unrealized_pl >= 0 ? '+' : '' }}{{ brandFmt(p.unrealized_pl) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Price Row -->
+              <div class="pos-price-row">
+                <div class="pos-price-item">
+                  <span class="ppi-label">Entry</span>
+                  <span class="ppi-val">{{ fmt(p.entry_price) }}</span>
+                </div>
+                <div class="pos-price-arrow">
+                  <i class="fa-solid" [ngClass]="p.current_price >= p.entry_price ? 'fa-arrow-trend-up text-success' : 'fa-arrow-trend-down text-danger'"></i>
+                </div>
+                <div class="pos-price-item">
+                  <span class="ppi-label">Current</span>
+                  <span class="ppi-val" [ngClass]="p.current_price >= p.entry_price ? 'text-success' : 'text-danger'">
+                    {{ fmt(p.current_price) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Stats Grid -->
+              <div class="pos-stats-grid">
+                <div class="pos-stat">
+                  <span class="ps-label">Quantity</span>
+                  <span class="ps-val">{{ fmt(p.quantity, 4) }}</span>
+                </div>
+                <div class="pos-stat">
+                  <span class="ps-label">Margin Used</span>
+                  <span class="ps-val">{{ brandFmt(p.margin_used) }}</span>
+                </div>
+                <div class="pos-stat">
+                  <span class="ps-label">Leverage</span>
+                  <span class="ps-val"><span class="tag">{{ p.leverage_used }}x</span></span>
+                </div>
+                <div class="pos-stat" *ngIf="p.stop_loss">
+                  <span class="ps-label">Stop Loss</span>
+                  <span class="ps-val text-danger">{{ fmt(p.stop_loss) }}</span>
+                </div>
+                <div class="pos-stat" *ngIf="p.take_profit">
+                  <span class="ps-label">Take Profit</span>
+                  <span class="ps-val text-success">{{ fmt(p.take_profit) }}</span>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+          <ng-template #noPosM>
+            <div class="no-data"><i class="fa-light fa-inbox"></i><span>No open positions</span></div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+  </div>
+</div>

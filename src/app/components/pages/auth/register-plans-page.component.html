@@ -1,0 +1,510 @@
+<div class="trade-plans">
+  <!-- Background lighting & grid lines matching auth-shell -->
+  <div class="trade-plans__bg" aria-hidden="true">
+    <span class="trade-plans__orb trade-plans__orb--a"></span>
+    <span class="trade-plans__orb trade-plans__orb--b"></span>
+    <span class="trade-plans__orb trade-plans__orb--c"></span>
+    <span class="trade-plans__grid-lines"></span>
+  </div>
+
+  <div class="trade-plans__content">
+    <!-- Top Header Navigation -->
+    <header class="trade-plans__top">
+      <button type="button" class="trade-plans__back-btn" (click)="editRegistration()"
+        aria-label="Back to registration">
+        <span><i class="fa-light fa-arrow-left" aria-hidden="true"></i></span>
+        <span>Back to Registration</span>
+      </button>
+
+      <a routerLink="/login" class="trade-plans__brand" aria-label="Home">
+        @if (sharedservice.isDarkMode) {
+        <img class="trade-plans__logo" [src]="sharedservice.brandDarkLogoUrl || 'assets/img/logo/white-logo.png'"
+          alt="Brand Logo" />
+        } @else {
+        <img class="trade-plans__logo" [src]="sharedservice.brandLogoUrl || 'assets/img/logo/black-logo.png'"
+          alt="Brand Logo" />
+        }
+      </a>
+
+      <button type="button" class="trade-plans__theme" (click)="toggleTheme($event)"
+        [attr.aria-label]="sharedservice.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        [title]="sharedservice.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span class="trade-plans__theme-icon" [class.trade-plans__theme-icon--active]="!sharedservice.isDarkMode">
+          <span><i class="fa-regular fa-sun-bright" aria-hidden="true"></i></span>
+        </span>
+        <span class="trade-plans__theme-icon" [class.trade-plans__theme-icon--active]="sharedservice.isDarkMode">
+          <span><i class="fa-regular fa-moon" aria-hidden="true"></i></span>
+        </span>
+      </button>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="trade-plans__main">
+      <!-- Hero Title Section -->
+      <section class="trade-plans__hero">
+        <div class="trade-plans__badge">
+          <span><i class="fa-light fa-layer-group" aria-hidden="true"></i></span>
+          <span>Step 2 of 2 · Account Configuration</span>
+        </div>
+
+        <h1 class="trade-plans__headline">Choose your trading plan</h1>
+        <p class="trade-plans__lead">
+          Select an account tier that matches your trading style, margin requirements, and fee preferences.
+        </p>
+
+        @if (draft) {
+        <div class="trade-plans__draft-bar" aria-label="Registration details">
+          <div class="trade-plans__draft-user">
+            <span class="trade-plans__draft-avatar">
+              <i class="fa-light fa-user" aria-hidden="true"></i>
+            </span>
+            <div class="trade-plans__draft-meta">
+              <span class="trade-plans__draft-name">{{ draft.username }}</span>
+              <div class="trade-plans__draft-contact">
+                <span>{{ draft.email }}</span>
+                <span class="trade-plans__draft-dot">·</span>
+                <span>{{ draftPhoneDisplay }}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="trade-plans__draft-edit" (click)="editRegistration()"
+            aria-label="Edit registration details">
+            <span><i class="fa-light fa-pen-to-square me-1" aria-hidden="true"></i></span>
+            <span>Edit credentials</span>
+          </button>
+        </div>
+        }
+      </section>
+
+      <!-- Plans Showcase Section -->
+      <section class="trade-plans__showcase" aria-label="Available trading plans">
+        @if (plansLoading) {
+        <div class="trade-plans__state-card">
+          <span class="trade-plans__spinner" aria-hidden="true"></span>
+          <h3 class="trade-plans__state-title">Loading trading plans…</h3>
+          <p class="trade-plans__state-desc">Fetching available account plans and leverage schedules.</p>
+        </div>
+        }
+
+        @if (!plansLoading && plansError) {
+        <div class="trade-plans__state-card trade-plans__state-card--error">
+          <div class="trade-plans__state-icon"><i class="fa-light fa-triangle-exclamation"></i></div>
+          <h3 class="trade-plans__state-title">Unable to load plans</h3>
+          <p class="trade-plans__state-desc">{{ plansError }}</p>
+          <button type="button" class="trade-plans__btn trade-plans__btn--primary" (click)="loadPlans()">
+            <span><i class="fa-light fa-rotate me-1"></i></span>
+            <span>Try again</span>
+          </button>
+        </div>
+        }
+
+        @if (!plansLoading && !plansError && !plans.length) {
+        <div class="trade-plans__state-card">
+          <div class="trade-plans__state-icon"><i class="fa-light fa-folder-open"></i></div>
+          <h3 class="trade-plans__state-title">No active plans found</h3>
+          <p class="trade-plans__state-desc">There are no active B2C registration plans at the moment. Please contact
+            support.</p>
+        </div>
+        }
+
+        @if (!plansLoading && !plansError && plans.length) {
+        <div class="trade-plans__grid">
+          @for (plan of plans; track plan.id; let i = $index) {
+          <article class="plan-card" [class.plan-card--submitting]="submittingPlanId === plan.id">
+            <!-- Card Header: Tier badge & plan code -->
+            <div class="plan-card__top">
+              <span class="plan-card__tier-badge">
+                {{ getPlanTierBadge(i, plan).label }}
+              </span>
+              <span class="plan-card__code">
+                {{ plan.plan_code }}
+              </span>
+            </div>
+
+            <!-- Title & Description -->
+            <div class="plan-card__head">
+              <h2 class="plan-card__title">{{ plan.name }}</h2>
+              <p class="plan-card__sub">{{ plan.description || 'Flexible trading plan with optimized margin rules and
+                competitive brokerage fees.' }}</p>
+            </div>
+
+            <!-- Key Perks List -->
+            <div class="plan-card__perks">
+              <div class="plan-card__perks-label">Included tier perks</div>
+              <ul class="plan-card__features">
+                @for (perk of getPlanPerks(plan, i); track perk) {
+                <li>
+                  <span class="plan-card__feature-icon">
+                    <span><i class="fa-solid fa-check"></i></span>
+                  </span>
+                  <span>{{ perk }}</span>
+                </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="plan-card__actions">
+              <button type="button" class="plan-card__btn plan-card__btn--ghost" [disabled]="isSubmitting"
+                (click)="openDetailsModal(plan)">
+                <span><i class="fa-light fa-sliders-up me-1" aria-hidden="true"></i></span>
+                <span>View specs</span>
+              </button>
+              <button type="button" class="plan-card__btn plan-card__btn--primary" [disabled]="isSubmitting"
+                (click)="proceedWithPlan(plan)">
+                @if (submittingPlanId === plan.id) {
+                <span class="trade-plans__spinner-sm me-2"></span>
+                <span>Registering...</span>
+                } @else {
+                <span>Select plan</span>
+                <span><i class="fa-light fa-arrow-right ms-1" aria-hidden="true"></i></span>
+                }
+              </button>
+            </div>
+          </article>
+          }
+        </div>
+        }
+      </section>
+
+      <!-- Sign In Redirect -->
+      <div class="trade-plans__signin">
+        <span>Already have an account?</span>
+        <a routerLink="/login" class="trade-plans__signin-link">Sign in</a>
+      </div>
+    </main>
+
+    @if (sharedservice.brandName) {
+    <footer class="trade-plans__footer">
+      <p>&copy; {{ sharedservice.brandName }}</p>
+    </footer>
+    }
+  </div>
+
+  <!-- Slide-Over Specification Drawer -->
+  @if (detailsModalPlan) {
+  <div class="plan-drawer-container" role="dialog" aria-modal="true"
+    [attr.aria-label]="detailsModalPlan.name + ' specifications'">
+    <!-- Blurred Backdrop -->
+    <div class="plan-drawer__backdrop" (click)="closeDetailsModal()" aria-hidden="true"></div>
+
+    <!-- Slide-Over Drawer Panel -->
+    <aside class="plan-drawer">
+      <!-- Drawer Header -->
+      <header class="plan-drawer__header">
+        <div class="plan-drawer__header-meta">
+          <div class="plan-drawer__badges">
+            <span class="plan-drawer__badge-code">{{ detailsModalPlan.plan_code }}</span>
+            <span class="plan-drawer__badge-status">
+              <i class="fa-solid fa-circle me-1"></i> Active Plan
+            </span>
+          </div>
+          <h2 class="plan-drawer__title">{{ detailsModalPlan.name }}</h2>
+          <p class="plan-drawer__sub">
+            {{ planDetails?.description || detailsModalPlan.description || 'Comprehensive plan specifications, leverage
+            limits, and fee schedules.' }}
+          </p>
+        </div>
+
+        <button type="button" class="plan-drawer__close" (click)="closeDetailsModal()" aria-label="Close drawer">
+          <span><i class="fa-light fa-xmark" aria-hidden="true"></i></span>
+        </button>
+      </header>
+
+      <!-- Category Filter Tabs -->
+      <nav class="plan-drawer__tabs" role="tablist" aria-label="Specification categories">
+        <button type="button" class="plan-drawer__tab" [class.plan-drawer__tab--active]="activeDrawerTab === 'all'"
+          (click)="setDrawerTab('all')">
+          <span><i class="fa-light fa-layer-group me-1"></i></span>
+          <span>All specs</span>
+        </button>
+        <button type="button" class="plan-drawer__tab" [class.plan-drawer__tab--active]="activeDrawerTab === 'spread'"
+          (click)="setDrawerTab('spread')">
+          <span><i class="fa-light fa-arrows-left-right me-1"></i></span>
+          <span>Spreads &amp; Execution</span>
+        </button>
+        <button type="button" class="plan-drawer__tab" [class.plan-drawer__tab--active]="activeDrawerTab === 'charges'"
+          (click)="setDrawerTab('charges')">
+          <span><i class="fa-light fa-receipt me-1"></i></span>
+          <span>Brokerage &amp; Fees</span>
+        </button>
+        <button type="button" class="plan-drawer__tab" [class.plan-drawer__tab--active]="activeDrawerTab === 'risk'"
+          (click)="setDrawerTab('risk')">
+          <span><i class="fa-light fa-gauge-max me-1"></i></span>
+          <span>Leverage &amp; Risk</span>
+        </button>
+        <button type="button" class="plan-drawer__tab" [class.plan-drawer__tab--active]="activeDrawerTab === 'markets'"
+          (click)="setDrawerTab('markets')">
+          <span><i class="fa-light fa-chart-candlestick me-1"></i></span>
+          <span>Markets</span>
+        </button>
+      </nav>
+
+      <!-- Drawer Content -->
+      <div class="plan-drawer__body">
+        @if (detailsLoading) {
+        <div class="plan-drawer__state">
+          <span class="trade-plans__spinner" aria-hidden="true"></span>
+          <h3 class="trade-plans__state-title">Loading specifications…</h3>
+          <p class="trade-plans__state-desc">Retrieving leverage schedules, fee tables, and trading rules.</p>
+        </div>
+        }
+
+        @if (!detailsLoading && detailsError) {
+        <div class="plan-drawer__state plan-drawer__state--error">
+          <div class="trade-plans__state-icon"><i class="fa-light fa-triangle-exclamation"></i></div>
+          <p class="trade-plans__state-desc">{{ detailsError }}</p>
+          <button type="button" class="plan-card__btn plan-card__btn--ghost mt-2"
+            (click)="openDetailsModal(detailsModalPlan!)">Retry</button>
+        </div>
+        }
+
+        @if (!detailsLoading && planDetails) {
+        <div class="plan-drawer__sections">
+
+          <!-- 1. SPREAD & EXECUTION PRICING -->
+          @if (activeDrawerTab === 'all' || activeDrawerTab === 'spread') {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-arrows-left-right"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Spread &amp; Execution Pricing</h3>
+                <p class="drawer-card__sub">Dynamic bid-ask spreads and liquidity execution rules</p>
+              </div>
+            </header>
+
+            <!-- Educational Callout Box: What is Spread? (Only on 'spread' tab, not 'all') -->
+            @if (activeDrawerTab === 'spread') {
+            <div class="spread-edu-box" role="note" aria-label="What is trading spread?">
+              <div class="spread-edu-box__icon">
+                <i class="fa-light fa-book-open-cover"></i>
+              </div>
+              <div class="spread-edu-box__content">
+                <h4 class="spread-edu-box__title">What is a Trading Spread?</h4>
+                <p class="spread-edu-box__text">
+                  The <strong>spread</strong> is the pricing difference between the Ask (buy) and Bid (sell) quote for
+                  an instrument. A tighter spread means lower execution cost when entering and exiting positions.
+                </p>
+                <p class="spread-edu-box__note">
+                  <i class="fa-solid fa-circle-check me-1"></i>
+                  <span>On this tier, spreads are dynamically sourced from top-tier institutional liquidity providers
+                    with zero dealing-desk markup and automated price improvement.</span>
+                </p>
+              </div>
+            </div>
+            }
+
+            <!-- Spread Schedule Table -->
+            <div class="specs-table" [class.mt-3]="activeDrawerTab === 'spread'">
+              @for (row of getSpreadRows(planDetails); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">{{ row.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 2. LEVERAGE MULTIPLIERS -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'risk') && getLeverageItems(planDetails).length) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-bolt"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Leverage Multipliers</h3>
+                <p class="drawer-card__sub">Maximum margin multiplier limits per trading symbol</p>
+              </div>
+            </header>
+            <div class="leverage-grid">
+              @for (item of getLeverageItems(planDetails); track item.symbol) {
+              <div class="leverage-chip">
+                <span class="leverage-chip__symbol">{{ item.symbol }}</span>
+                <span class="leverage-chip__value">{{ item.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 2. MARKETS ACCESS -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'markets') && getMarketChips(planDetails).length) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-globe"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Enabled Markets</h3>
+                <p class="drawer-card__sub">Available trading instruments and asset sectors</p>
+              </div>
+            </header>
+            <div class="markets-grid">
+              @for (mkt of getMarketChips(planDetails); track mkt.name) {
+              <div class="market-chip">
+                <span><i class="fa-light fa-chart-simple"></i></span>
+                <span class="market-chip__name">{{ mkt.name }}</span>
+                <span class="market-chip__count">({{ mkt.count }} {{ mkt.count === 1 ? 'asset' : 'assets' }})</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 3. BROKERAGE SCHEDULE -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'charges') && hasSectionData(planDetails, 'brokerage'))
+          {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-percent"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Brokerage Schedule</h3>
+                <p class="drawer-card__sub">Applicable brokerage and execution fee tiers</p>
+              </div>
+            </header>
+            <div class="specs-table">
+              @for (row of getSectionRows(planDetails, 'brokerage'); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">{{ row.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 4. TRADING CHARGES -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'charges') && hasSectionData(planDetails,
+          'trading_charges')) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-file-invoice-dollar"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Trading Charges</h3>
+                <p class="drawer-card__sub">Additional settlement and clearing charges</p>
+              </div>
+            </header>
+            <div class="specs-table">
+              @for (row of getSectionRows(planDetails, 'trading_charges'); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">{{ row.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 5. RISK PARAMETERS -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'risk') && hasSectionData(planDetails,
+          'risk_configuration')) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-shield-halved"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Risk Configuration</h3>
+                <p class="drawer-card__sub">Margin call thresholds and stop-out limits</p>
+              </div>
+            </header>
+            <div class="specs-table">
+              @for (row of getSectionRows(planDetails, 'risk_configuration'); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">{{ row.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 6. TRADING PERMISSIONS -->
+          @if ((activeDrawerTab === 'all' || activeDrawerTab === 'risk') && hasSectionData(planDetails,
+          'trading_permissions')) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-key"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">Trading Permissions</h3>
+                <p class="drawer-card__sub">Allowed order types and trading capabilities</p>
+              </div>
+            </header>
+            <div class="specs-table">
+              @for (row of getSectionRows(planDetails, 'trading_permissions'); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">
+                  @if (row.value === 'Yes') {
+                  <span class="status-pill status-pill--yes">
+                    <i class="fa-solid fa-check"></i> Enabled
+                  </span>
+                  } @else if (row.value === 'No') {
+                  <span class="status-pill status-pill--no">
+                    <i class="fa-solid fa-xmark"></i> Disabled
+                  </span>
+                  } @else {
+                  {{ row.value }}
+                  }
+                </span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          <!-- 7. ANY OTHER SECTIONS -->
+          @for (sectionKey of templateSectionKeys(planDetails); track sectionKey) {
+          @if (
+          activeDrawerTab === 'all' &&
+          sectionKey !== 'spread' &&
+          sectionKey !== 'spreads' &&
+          sectionKey !== 'spread_schedule' &&
+          sectionKey !== 'spread_configuration' &&
+          sectionKey !== 'leverage' &&
+          sectionKey !== 'markets' &&
+          sectionKey !== 'brokerage' &&
+          sectionKey !== 'trading_charges' &&
+          sectionKey !== 'risk_configuration' &&
+          sectionKey !== 'trading_permissions'
+          ) {
+          <section class="drawer-card">
+            <header class="drawer-card__head">
+              <span class="drawer-card__icon"><i class="fa-light fa-sliders"></i></span>
+              <div class="drawer-card__titles">
+                <h3 class="drawer-card__title">{{ formatSectionTitle(sectionKey) }}</h3>
+                <p class="drawer-card__sub">Plan configuration specifications</p>
+              </div>
+            </header>
+            <div class="specs-table">
+              @for (row of getSectionRows(planDetails, sectionKey); track row.label + row.value) {
+              <div class="specs-row">
+                <span class="specs-row__label">{{ row.label }}</span>
+                <span class="specs-row__value">{{ row.value }}</span>
+              </div>
+              }
+            </div>
+          </section>
+          }
+          }
+
+        </div>
+        }
+      </div>
+
+      <!-- Sticky Drawer Footer Bar -->
+      <footer class="plan-drawer__footer">
+        <button type="button" class="plan-card__btn plan-card__btn--ghost" (click)="closeDetailsModal()">
+          <span>Cancel</span>
+        </button>
+        <button type="button" class="plan-card__btn plan-card__btn--primary" [disabled]="isSubmitting"
+          (click)="proceedWithPlan(detailsModalPlan)">
+          @if (isSubmitting) {
+          <span class="trade-plans__spinner-sm me-2"></span>
+          <span>Registering...</span>
+          } @else {
+          <span>Select {{ detailsModalPlan.name }}</span>
+          <span><i class="fa-light fa-arrow-right ms-1" aria-hidden="true"></i></span>
+          }
+        </button>
+      </footer>
+    </aside>
+  </div>
+  }
+</div>

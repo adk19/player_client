@@ -1,0 +1,285 @@
+@use "ngx-toastr/toastr";
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Teachers:ital,wght@0,400..800;1,400..800&display=swap");
+
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+::selection {
+  color: var(--primary-btn-txt);
+  background-color: var(--primary-btn);
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--layout-bg);
+}
+
+body.trade-layout-resizing {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+body.trade-layout-resizing--col {
+  cursor: col-resize !important;
+}
+
+body.trade-layout-resizing--row {
+  cursor: row-resize !important;
+}
+
+body.trade-layout-resizing * {
+  cursor: inherit !important;
+}
+
+button:focus {
+  color: var(--main-text);
+  background-color: var(--primary-light);
+}
+
+.red-color {
+  color: var(--red) !important;
+}
+
+.green-color {
+  color: var(--green) !important;
+}
+
+.primary-color {
+  color: var(--primary) !important;
+}
+
+#tv-attr-logo {
+  display: none !important;
+}
+
+// ---------------------- toastr start
+.toast-top-right {
+  bottom: 40px !important;
+
+  .ngx-toastr {
+    box-shadow: none !important;
+    border-radius: 10px !important;
+
+    .toast-message {
+      font-size: 13px !important;
+      font-weight: 500;
+    }
+
+    &.toast-warning {
+      background-image: url("./assets/img/toastr/warning.png") !important;
+      background-color: var(--yellow-bg) !important;
+
+      .toast-message {
+        color: var(--yellow-color) !important;
+      }
+
+      .toast-progress {
+        background-color: var(--yellow-color) !important;
+      }
+    }
+
+    &.toast-success {
+      background-image: url("./assets/img/toastr/success.png") !important;
+      background-color: var(--green-bg) !important;
+
+      .toast-message {
+        color: var(--green-color) !important;
+      }
+
+      .toast-progress {
+        background-color: var(--green-color) !important;
+      }
+    }
+
+    &.toast-error {
+      background-image: url("./assets/img/toastr/error.png") !important;
+      background-color: var(--red-bg) !important;
+
+      .toast-message {
+        color: var(--red-color) !important;
+      }
+
+      .toast-progress {
+        background-color: var(--red-color) !important;
+      }
+    }
+
+    &.toast-info {
+      background-image: url("./assets/img/toastr/info.png") !important;
+      background-color: var(--blue-bg) !important;
+
+      .toast-message {
+        color: var(--blue-color) !important;
+      }
+
+      .toast-progress {
+        background-color: var(--blue-color) !important;
+      }
+    }
+  }
+}
+
+// ---------------------- toastr end
+
+app-options-chart-view {
+  table tr td:last-child {
+    z-index: 2 !important;
+    position: relative !important;
+  }
+}
+
+.chart-container .chart-countdown {
+  backdrop-filter: blur(2px) !important;
+  top: 15px !important;
+  left: 45px !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 576px) {
+  .chart-container .chart-countdown {
+    left: 25px !important;
+  }
+}
+
+.logoloaderwrapper {
+  box-shadow: none !important;
+}
+
+.price-tag {
+  display: none !important;
+}
+
+/* Global keyframes for glossy sweep effects */
+@keyframes btnafteranim {
+  0% {
+    transform: translate3d(-600%, 0, 0) rotate(11deg);
+  }
+
+  100% {
+    transform: translate3d(1200%, 0, 0) rotate(11deg);
+  }
+}
+
+@keyframes buysellbtnafteranim {
+  0% {
+    transform: translate3d(-600%, 0, 0) rotate(11deg);
+  }
+
+  100% {
+    transform: translate3d(1200%, 0, 0) rotate(11deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
+
+@keyframes marquee-shift {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+#widget-container {
+  border: none !important;
+}
+
+/* Autofill: hex only (var() ignored in :-webkit-autofill) + inset shadow + animation */
+@keyframes app-autofill-dark {
+  0%,
+  100% {
+    background-color: #0a0a0a;
+    color: #fafafa;
+  }
+}
+
+@keyframes app-autofill-light {
+  0%,
+  100% {
+    background-color: #ffffff;
+    color: #3e3838;
+  }
+}
+
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark input:-webkit-autofill:active,
+html.dark textarea:-webkit-autofill,
+html.dark textarea:-webkit-autofill:hover,
+html.dark textarea:-webkit-autofill:focus,
+html.dark textarea:-webkit-autofill:active,
+html.dark select:-webkit-autofill,
+html.dark select:-webkit-autofill:hover,
+html.dark select:-webkit-autofill:focus,
+html.dark select:-webkit-autofill:active {
+  -webkit-animation: app-autofill-dark 1ms ease-out 0s forwards;
+  animation: app-autofill-dark 1ms ease-out 0s forwards;
+  -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset !important;
+  box-shadow: 0 0 0 1000px #0a0a0a inset !important;
+  -webkit-text-fill-color: #fafafa !important;
+  caret-color: #fafafa;
+  background-color: #0a0a0a !important;
+  transition:
+    background-color 99999s ease-out 0s,
+    color 99999s ease-out 0s;
+}
+
+html:not(.dark) input:-webkit-autofill,
+html:not(.dark) input:-webkit-autofill:hover,
+html:not(.dark) input:-webkit-autofill:focus,
+html:not(.dark) input:-webkit-autofill:active,
+html:not(.dark) textarea:-webkit-autofill,
+html:not(.dark) textarea:-webkit-autofill:hover,
+html:not(.dark) textarea:-webkit-autofill:focus,
+html:not(.dark) textarea:-webkit-autofill:active,
+html:not(.dark) select:-webkit-autofill,
+html:not(.dark) select:-webkit-autofill:hover,
+html:not(.dark) select:-webkit-autofill:focus,
+html:not(.dark) select:-webkit-autofill:active {
+  -webkit-animation: app-autofill-light 1ms ease-out 0s forwards;
+  animation: app-autofill-light 1ms ease-out 0s forwards;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #3e3838 !important;
+  caret-color: #3e3838;
+  background-color: #ffffff !important;
+  transition:
+    background-color 99999s ease-out 0s,
+    color 99999s ease-out 0s;
+}
+
+html.dark input:autofill,
+html.dark input:autofill:hover,
+html.dark input:autofill:focus,
+html.dark textarea:autofill,
+html.dark textarea:autofill:hover,
+html.dark textarea:autofill:focus,
+html.dark select:autofill,
+html.dark select:autofill:hover,
+html.dark select:autofill:focus {
+  box-shadow: 0 0 0 1000px #0a0a0a inset !important;
+  -webkit-text-fill-color: #fafafa !important;
+  color: #fafafa !important;
+}
+
+html:not(.dark) input:autofill,
+html:not(.dark) input:autofill:hover,
+html:not(.dark) input:autofill:focus,
+html:not(.dark) textarea:autofill,
+html:not(.dark) textarea:autofill:hover,
+html:not(.dark) textarea:autofill:focus,
+html:not(.dark) select:autofill,
+html:not(.dark) select:autofill:hover,
+html:not(.dark) select:autofill:focus {
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #3e3838 !important;
+  color: #3e3838 !important;
+}

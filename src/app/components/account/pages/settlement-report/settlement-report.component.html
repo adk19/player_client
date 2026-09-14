@@ -1,0 +1,181 @@
+<div class="settlement-page">
+  <div class="settlement-shell">
+
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account</div>
+          <h1 class="page-title">Settlement</h1>
+          <p class="page-subtitle">
+            Your settlement overview, payables, receivables, and linked reports for the selected period.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="filter-date-group">
+        <input type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" />
+        <span class="date-sep">—</span>
+        <input type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" />
+      </div>
+
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">
+        <i class="fa-light fa-xmark"></i> Clear
+      </button>
+    </div>
+
+    <ng-container *ngIf="loading">
+      <div class="metrics-grid">
+        <div class="metric-card sk-card" *ngFor="let i of [1,2,3,4]">
+          <div class="sk sk-label"></div>
+          <div class="sk sk-value"></div>
+        </div>
+      </div>
+      <div class="settlement-card sk-card settlement-card--skeleton">
+        <div class="sk sk-value" style="height: 24px; width: 180px; margin-bottom: 16px"></div>
+        <div class="sk sk-row" *ngFor="let i of [1,2,3]"></div>
+      </div>
+    </ng-container>
+
+    <div class="settlement-error" *ngIf="!loading && error">
+      <i class="fa-light fa-circle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+
+    <ng-container *ngIf="!loading && !error">
+
+      <div class="metrics-grid" *ngIf="totals">
+        <div class="metric-card">
+          <div class="metric-label">Net Pending</div>
+          <div class="metric-value" [ngClass]="amountClass(totals.net_pending)">
+            {{ totals.net_pending >= 0 ? '+' : '' }}{{ brandFmt(totals.net_pending) }}
+          </div>
+          <div class="metric-desc">Overall pending balance</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Payable Pending</div>
+          <div class="metric-value val-negative">{{ brandFmt(totals.payable_pending) }}</div>
+          <div class="metric-desc">Amount you owe</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Receivable Pending</div>
+          <div class="metric-value val-positive">{{ brandFmt(totals.receivable_pending) }}</div>
+          <div class="metric-desc">Amount owed to you</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Brokerage</div>
+          <div class="metric-value val-negative">{{ brandFmt(totals.brokerage_amount) }}</div>
+          <div class="metric-desc">Accumulated brokerage fees</div>
+        </div>
+      </div>
+
+      <div class="settlement-card" *ngIf="row; else noSettlementRow">
+        <div class="settlement-card__header">
+          <div class="settlement-card__identity">
+            <div class="settlement-card__avatar" aria-hidden="true">
+              <i class="fa-light fa-handshake"></i>
+            </div>
+            <div>
+              <div class="settlement-card__kicker">Counterparty</div>
+              <h2 class="settlement-card__name">{{ row.counterparty_name || '—' }}</h2>
+              <div class="settlement-card__badges">
+                <span class="type-badge">{{ enumLabel(row.counterparty_type) }}</span>
+                <span class="scope-badge" [class.scope-badge--downline]="row.is_downline">
+                  {{ row.is_downline ? 'Downline' : 'Direct' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="settlement-card__net" [ngClass]="amountClass(row.net_pending)">
+            <span class="settlement-card__net-label">Net Pending</span>
+            <span class="settlement-card__net-value">
+              {{ row.net_pending >= 0 ? '+' : '' }}{{ brandFmt(row.net_pending) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="settlement-card__stats">
+          <div class="settlement-stat">
+            <span class="settlement-stat__label">Entries</span>
+            <span class="settlement-stat__value">{{ fmt(row.entries, 0) }}</span>
+          </div>
+          <div class="settlement-stat">
+            <span class="settlement-stat__label">Gross Total</span>
+            <span class="settlement-stat__value">{{ brandFmt(row.gross_total) }}</span>
+          </div>
+          <div class="settlement-stat">
+            <span class="settlement-stat__label">Settled Total</span>
+            <span class="settlement-stat__value">{{ brandFmt(row.settled_total) }}</span>
+          </div>
+          <div class="settlement-stat">
+            <span class="settlement-stat__label">Brokerage Charge</span>
+            <span class="settlement-stat__value val-negative">{{ brandFmt(row.brokerage_amount) }}</span>
+          </div>
+          <div class="settlement-stat">
+            <span class="settlement-stat__label">Net Settlement</span>
+            <span class="settlement-stat__value" [ngClass]="amountClass(row.net_settlement)">
+              {{ row.net_settlement >= 0 ? '+' : '' }}{{ brandFmt(row.net_settlement) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noSettlementRow>
+        <div class="settlement-card settlement-card--empty">
+          <i class="fa-light fa-inbox"></i>
+          <span>No settlement row for this period</span>
+          <span class="settlement-card__empty-sub" *ngIf="hasFilters">Try adjusting the date range</span>
+        </div>
+      </ng-template>
+
+      <div class="settlement-actions">
+        <p class="settlement-actions__title">Related reports</p>
+        <div class="settlement-actions__grid">
+          <button type="button" class="settlement-action-btn" (click)="openExposureSummary()">
+            <span class="settlement-action-btn__icon" aria-hidden="true">
+              <i class="fa-light fa-chart-line"></i>
+            </span>
+            <span class="settlement-action-btn__text">
+              <span class="settlement-action-btn__label">Exposure Summary</span>
+              <span class="settlement-action-btn__desc">Payable & receivable obligations</span>
+            </span>
+            <i class="fa-light fa-chevron-right settlement-action-btn__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="settlement-action-btn" (click)="openTradeHistory()">
+            <span class="settlement-action-btn__icon settlement-action-btn__icon--alt" aria-hidden="true">
+              <i class="fa-light fa-arrow-right-arrow-left"></i>
+            </span>
+            <span class="settlement-action-btn__text">
+              <span class="settlement-action-btn__label">Trade History</span>
+              <span class="settlement-action-btn__desc">Closed trades & P/L breakdown</span>
+            </span>
+            <i class="fa-light fa-chevron-right settlement-action-btn__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="settlement-action-btn" (click)="openSettlementHistory()">
+            <span class="settlement-action-btn__icon settlement-action-btn__icon--history" aria-hidden="true">
+              <i class="fa-light fa-clock-rotate-left"></i>
+            </span>
+            <span class="settlement-action-btn__text">
+              <span class="settlement-action-btn__label">Settlement History</span>
+              <span class="settlement-action-btn__desc">Settled & partial settlement log</span>
+            </span>
+            <i class="fa-light fa-chevron-right settlement-action-btn__arrow" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

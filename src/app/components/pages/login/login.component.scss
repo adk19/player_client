@@ -1,0 +1,1214 @@
+/* Trading panel login — flat UI, no box-shadow */
+.trade-login {
+  --login-card-bg: var(--layout-bg);
+  --login-card-border: var(--border-light);
+  --login-input-bg: color-mix(in srgb, var(--layout-bg) 92%, var(--primary) 8%);
+  --login-muted: var(--normal-text);
+
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  color: var(--main-text);
+  box-sizing: border-box;
+  background:
+    radial-gradient(ellipse 90% 70% at 0% 0%, color-mix(in srgb, var(--primary) 22%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 100% 10%, color-mix(in srgb, var(--primary) 14%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 45%),
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 6%, var(--layout-bg)) 0%, var(--layout-bg) 42%, var(--layout-bg) 100%);
+}
+
+html.dark .trade-login {
+  background:
+    radial-gradient(ellipse 90% 70% at 0% 0%, color-mix(in srgb, var(--primary) 28%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 100% 10%, color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, color-mix(in srgb, var(--primary) 12%, transparent) 0%, transparent 45%),
+    linear-gradient(180deg, #0c1018 0%, #0a0a0a 55%, #0a0a0a 100%);
+}
+
+.trade-login__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.trade-login__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.55;
+}
+
+.trade-login__orb--a {
+  width: min(520px, 55vw);
+  height: min(520px, 55vw);
+  top: -12%;
+  left: -8%;
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.trade-login__orb--b {
+  width: min(420px, 48vw);
+  height: min(420px, 48vw);
+  top: 18%;
+  right: -6%;
+  background: color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+.trade-login__orb--c {
+  width: min(380px, 42vw);
+  height: min(380px, 42vw);
+  bottom: -10%;
+  left: 35%;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.trade-login__grid-lines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--primary) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--primary) 8%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 75%);
+}
+
+html.dark .trade-login__grid-lines {
+  opacity: 0.2;
+}
+
+.trade-login__content {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 28px;
+  box-sizing: border-box;
+}
+
+/* Top bar */
+.trade-login__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-shrink: 0;
+}
+
+.trade-login__brand {
+  min-width: 0;
+}
+
+.trade-login__logo {
+  height: 40px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+  display: block;
+}
+
+html.dark .trade-login__logo {
+  filter: brightness(0) invert(1);
+}
+
+.trade-login__theme {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: var(--layout-bg);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.trade-login__theme:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border-light));
+}
+
+.trade-login__theme-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--normal-text);
+  font-size: 16px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.trade-login__theme-icon--active {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* Main grid */
+.trade-login__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 40px;
+  align-items: center;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Left hero */
+.trade-login__hero {
+  padding-right: 12px;
+}
+
+.trade-login__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--layout-bg));
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border-light));
+
+  i {
+    font-size: 13px;
+  }
+}
+
+.trade-login__headline {
+  margin: 0 0 14px;
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--main-text);
+  max-width: 520px;
+}
+
+.trade-login__lead {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--login-muted);
+  max-width: 480px;
+}
+
+.trade-login__features {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-login__features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--main-text);
+}
+
+.trade-login__feature-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--primary) 14%, var(--layout-bg));
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border-light));
+  color: var(--primary);
+  font-size: 10px;
+}
+
+.trade-login__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.trade-login__stat {
+  min-width: 140px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  background: var(--layout-bg);
+}
+
+.trade-login__stat-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.trade-login__stat-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--login-muted);
+}
+
+.trade-login__hero-art {
+  margin-top: 28px;
+  display: none;
+}
+
+.trade-login__hero-art img {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+}
+
+@media (min-width: 1100px) {
+  .trade-login__hero-art {
+    display: block;
+  }
+}
+
+/* Right panel / card */
+.trade-login__panel {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+.trade-login__card-shell {
+  width: 100%;
+  max-width: 460px;
+}
+
+.trade-login__card {
+  width: 100%;
+  padding: 28px 26px 24px;
+  border-radius: 28px;
+  border: 1px solid var(--login-card-border);
+  background: color-mix(in srgb, var(--login-card-bg) 94%, var(--primary) 6%);
+  box-sizing: border-box;
+  animation: trade-login-card-in 0.28s ease-out;
+}
+
+.trade-login__card--register {
+  .trade-login__field {
+    margin-bottom: 12px;
+  }
+
+  .trade-login__card-head {
+    margin-bottom: 20px;
+  }
+
+  .trade-login__input-wrap,
+  .trade-login__phone-row {
+    min-height: 48px;
+  }
+
+  .trade-login__input {
+    height: 46px;
+  }
+
+  .trade-login__field-msg {
+    margin-top: 4px;
+  }
+}
+
+@keyframes trade-login-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trade-login__register-form {
+  margin: 0;
+}
+
+.trade-login__card-head {
+  margin-bottom: 24px;
+}
+
+.trade-login__card-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--main-text);
+}
+
+.trade-login__card-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--login-muted);
+  line-height: 1.45;
+}
+
+.trade-login__field {
+  margin-bottom: 14px;
+}
+
+.trade-login__field-msg {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.trade-login__field-msg--err {
+  color: var(--red);
+}
+
+.trade-login__field-msg--hint {
+  color: var(--login-muted);
+}
+
+.trade-login__input-wrap--invalid,
+.trade-login__phone-row--invalid {
+  border-color: color-mix(in srgb, var(--red) 55%, var(--border-light)) !important;
+  outline: 2px solid color-mix(in srgb, var(--red) 18%, transparent);
+}
+
+.trade-login__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--main-text);
+}
+
+.trade-login__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  background: var(--layout-bg);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.trade-login__input-wrap:focus-within {
+  border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  outline-offset: 0;
+}
+
+.trade-login__input-icon {
+  flex-shrink: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--login-muted);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.trade-login__input {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--main-text);
+  outline: none;
+}
+
+.trade-login__input::placeholder {
+  color: var(--login-muted);
+  opacity: 0.85;
+}
+
+.trade-login__input--password {
+  padding-right: 44px;
+}
+
+.trade-login__eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--login-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.trade-login__eye:hover {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.trade-login__remember {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--main-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.trade-login__checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.trade-login__submit {
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.trade-login__submit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 88%, #000);
+}
+
+.trade-login__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.trade-login__submit i {
+  font-size: 15px;
+}
+
+.trade-login__spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: trade-login-spin 0.7s linear infinite;
+}
+
+@keyframes trade-login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.trade-login__error {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--red) 45%, var(--border-light));
+  background: color-mix(in srgb, var(--red) 8%, var(--layout-bg));
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--red);
+}
+
+.trade-login__error-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+}
+
+.trade-login__error-text {
+  line-height: 1.45;
+
+  strong {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+}
+
+.trade-login__switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--login-muted);
+}
+
+.trade-login__link {
+  margin: 0 0 0 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.trade-login__submit--register {
+  margin-top: 4px;
+}
+
+/* Mobile + country code */
+.trade-login__phone-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  background: var(--layout-bg);
+  transition: border-color 0.15s ease;
+}
+
+.trade-login__phone-row:focus-within {
+  border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  outline-offset: 0;
+}
+
+.trade-login__dial-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.trade-login__dial-btn {
+  height: 100%;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: none;
+  border-right: 1px solid var(--border-light);
+  border-radius: 14px 0 0 14px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--login-input-bg));
+  color: var(--main-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 12%, var(--login-input-bg));
+  }
+
+  i {
+    font-size: 11px;
+    color: var(--login-muted);
+  }
+}
+
+.trade-login__dial-code {
+  min-width: 2.5ch;
+  letter-spacing: 0.02em;
+}
+
+.trade-login__phone-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--main-text);
+  outline: none;
+
+  &::placeholder {
+    color: var(--login-muted);
+  }
+}
+
+.trade-login__dial-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(300px, 88vw);
+  max-height: 260px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  background: var(--layout-bg);
+  overflow: hidden;
+}
+
+.trade-login__dial-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--login-muted);
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.trade-login__dial-search {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--main-text);
+  outline: none;
+
+  &::placeholder {
+    color: var(--login-muted);
+  }
+}
+
+.trade-login__dial-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trade-login__dial-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--main-text);
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 8%, var(--layout-bg));
+  }
+}
+
+.trade-login__dial-option--active {
+  background: color-mix(in srgb, var(--primary) 12%, var(--layout-bg));
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border-light));
+}
+
+.trade-login__dial-option-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trade-login__dial-option-code {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.trade-login__dial-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--login-muted);
+}
+
+.trade-login__footer {
+  margin: 14px 0 0;
+  padding-bottom: 4px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--login-muted);
+}
+
+/* Mobile chrome (hidden on desktop) */
+.trade-login__sheet-handle,
+.trade-login__sheet-close {
+  display: none;
+}
+
+.trade-login__mobile-art,
+.trade-login__mobile-actions,
+.trade-login__sheet-backdrop {
+  display: none;
+}
+
+/* Tablet / mobile */
+@media (max-width: 960px) {
+  .trade-login__content {
+    z-index: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 24px;
+    min-height: 100dvh;
+    box-sizing: border-box;
+  }
+
+  .trade-login__top {
+    margin-bottom: 12px;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .trade-login__brand {
+    display: block;
+    min-width: 0;
+  }
+
+  .trade-login__logo {
+    height: 36px;
+    max-width: 160px;
+  }
+
+  .trade-login__grid {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 0;
+    justify-content: end;
+    align-items: end;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .trade-login__hero {
+    order: 1;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 4px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .trade-login__mobile-art {
+    display: block;
+    width: 70%;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto 16px;
+    flex-shrink: 0;
+  }
+
+  .trade-login__mobile-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 0 8px;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .trade-login__mobile-copy .trade-login__badge {
+    margin: 0 auto 14px;
+  }
+
+  .trade-login__mobile-copy .trade-login__headline {
+    margin: 0 auto 10px;
+    max-width: 100%;
+    font-size: clamp(22px, 5.8vw, 30px);
+    text-wrap: balance;
+  }
+
+  .trade-login__mobile-copy .trade-login__lead {
+    margin: 0 auto 18px;
+    max-width: 320px;
+    font-size: 12px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .trade-login__mobile-copy .trade-login__features {
+    width: 100%;
+    display: none;
+    max-width: 300px;
+    margin: 0 auto 18px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .trade-login__mobile-copy .trade-login__features li {
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  .trade-login__mobile-copy .trade-login__stats {
+    width: 100%;
+    max-width: 340px;
+    justify-content: center;
+    display: none;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .trade-login__mobile-copy .trade-login__stat {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    max-width: 165px;
+    padding: 12px 14px;
+  }
+
+  .trade-login__mobile-actions {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 20px;
+    padding: 0 0 calc(12px + env(safe-area-inset-bottom, 0px));
+    position: static;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+
+  .trade-login--sheet-open .trade-login__top {
+    opacity: 0.4;
+  }
+
+  .trade-login__panel {
+    order: 3;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    max-height: min(92dvh, 720px);
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 24px 24px 0 0;
+    border: 1px solid var(--login-card-border);
+    border-bottom: none;
+    background: color-mix(in srgb, var(--login-card-bg) 96%, var(--primary) 4%);
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    box-sizing: border-box;
+    pointer-events: none;
+    visibility: hidden;
+    overflow: hidden;
+  }
+
+  .trade-login--sheet-open .trade-login__panel {
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .trade-login__sheet-handle {
+    display: block;
+    flex-shrink: 0;
+    width: 40px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--main-text) 22%, transparent);
+  }
+
+  .trade-login__sheet-close {
+    display: inline-flex;
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--main-text) 6%, var(--layout-bg));
+    color: var(--main-text);
+    font-size: 18px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+
+  .trade-login__sheet-close:hover {
+    background: color-mix(in srgb, var(--primary) 12%, var(--layout-bg));
+    color: var(--primary);
+  }
+
+  .trade-login__card-shell {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .trade-login__sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 18px 12px;
+  }
+
+  .trade-login__card {
+    padding: 8px 2px 12px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    animation: none;
+  }
+
+  .trade-login__mobile-btn {
+    width: 100%;
+    min-height: 54px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    box-shadow: none;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.12s ease;
+  }
+
+  .trade-login__mobile-btn:active {
+    transform: scale(0.98);
+  }
+
+  .trade-login__mobile-btn--login {
+    background: var(--primary);
+    color: var(--white);
+  }
+
+  .trade-login__mobile-btn--login.trade-login__mobile-btn--active,
+  .trade-login__mobile-btn--login:hover {
+    background: color-mix(in srgb, var(--primary) 90%, #000);
+  }
+
+  .trade-login__mobile-btn--register {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    font-weight: 600;
+  }
+
+  .trade-login__mobile-btn--register.trade-login__mobile-btn--active,
+  .trade-login__mobile-btn--register:hover {
+    background: color-mix(in srgb, var(--primary) 8%, var(--layout-bg));
+  }
+
+  .trade-login__sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.75);
+    animation: trade-login-fade-in 0.25s ease;
+  }
+
+  .trade-login__orb--a {
+    width: 280px;
+    height: 280px;
+  }
+
+  .trade-login__orb--b,
+  .trade-login__orb--c {
+    width: 220px;
+    height: 220px;
+  }
+}
+
+@keyframes trade-login-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+body.trade-login-sheet-open {
+  overflow: hidden;
+}
+
+@media (min-width: 961px) {
+  .trade-login__mobile-art,
+  .trade-login__mobile-actions {
+    display: none !important;
+  }
+
+  .trade-login__mobile-copy {
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .trade-login__mobile-copy .trade-login__badge {
+    margin: 0 0 18px;
+  }
+
+  .trade-login__mobile-copy .trade-login__headline,
+  .trade-login__mobile-copy .trade-login__lead {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 520px;
+  }
+
+  .trade-login__mobile-copy .trade-login__lead {
+    max-width: 480px;
+    margin-bottom: 24px;
+  }
+
+  .trade-login__mobile-copy .trade-login__features {
+    max-width: none;
+    margin-bottom: 28px;
+  }
+
+  .trade-login__mobile-copy .trade-login__features li {
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .trade-login__mobile-copy .trade-login__stats {
+    max-width: none;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .trade-login__mobile-copy .trade-login__stat {
+    flex: 0 1 auto;
+    min-width: 140px;
+    max-width: none;
+    padding: 14px 18px;
+  }
+
+  .trade-login__hero {
+    display: block;
+    flex: none;
+    padding-right: 12px;
+    text-align: left;
+  }
+
+  .trade-login__grid {
+    align-items: center;
+  }
+
+  .trade-login__panel {
+    position: relative;
+    z-index: auto;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+    padding-top: 4px;
+  }
+
+  .trade-login__card-shell {
+    position: sticky;
+    top: 20px;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .trade-login__sheet-body {
+    overflow: visible;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .trade-login__logo {
+    height: 32px;
+  }
+
+  .trade-login__headline {
+    font-size: 24px;
+  }
+
+  .trade-login__stat {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+  }
+
+  .trade-login__stats {
+    width: 100%;
+  }
+}

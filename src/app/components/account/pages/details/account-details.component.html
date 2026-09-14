@@ -1,0 +1,342 @@
+<div class="details-page">
+  <div class="details-shell">
+
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account</div>
+          <h1 class="page-title">Trading details</h1>
+          <p class="page-subtitle">
+            Your live trading profile — wallet, performance, leverage, charges, risk limits, and permissions.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-refresh" (click)="reload()" [disabled]="loading">
+            <i class="fa-light" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-rotate-right'"></i>
+            <span>{{ loading ? 'Refreshing…' : 'Refresh' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (showInitialLoading) {
+    <div class="details-load-block">
+      <div class="metrics-grid metrics-grid--stats">
+        @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="metric-card sk-card">
+          <div class="sk sk-label"></div>
+          <div class="sk sk-value"></div>
+        </div>
+        }
+      </div>
+      <div class="panel sk-panel">
+        <div class="sk sk-row"></div>
+        <div class="sk sk-row"></div>
+        <div class="sk sk-row"></div>
+      </div>
+    </div>
+    }
+
+    @if (!showInitialLoading && error) {
+    <div class="details-error">
+      <div class="details-error-icon"><i class="fa-light fa-circle-exclamation"></i></div>
+      <div class="details-error-body">
+        <div class="details-error-title">Could not load details</div>
+        <div class="details-error-msg">{{ error }}</div>
+        <button type="button" class="btn btn-primary" (click)="reload()">
+          <i class="fa-light fa-rotate-right"></i> Retry
+        </button>
+      </div>
+    </div>
+    }
+
+    @if (showContent && data; as d) {
+    <div class="details-content" [class.details-content--refreshing]="loading">
+
+      <div class="metrics-grid metrics-grid--stats">
+        <div class="metric-card">
+          <div class="metric-label">Total P/L</div>
+          <div class="metric-value" [ngClass]="plClass(d.statistics.total_pnl)">{{ money(d.statistics.total_pnl) }}
+          </div>
+          <div class="metric-desc">Lifetime realized P/L</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Win rate</div>
+          <div class="metric-value" [ngClass]="plClass(winRate())">{{ fmtPercent(winRate()) }}</div>
+          <div class="metric-desc">{{ d.statistics.winning_trades | number }} wins of {{ d.statistics.total_trades |
+            number }}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total trades</div>
+          <div class="metric-value">{{ d.statistics.total_trades | number }}</div>
+          <div class="metric-desc">Closed trade count</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Open positions</div>
+          <div class="metric-value">{{ d.statistics.open_positions | number }}</div>
+          <div class="metric-desc">Currently active</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Turnover</div>
+          <div class="metric-value">{{ money(d.statistics.total_turnover) }}</div>
+          <div class="metric-desc">Notional volume</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Brokerage paid</div>
+          <div class="metric-value">{{ money(d.statistics.total_brokerage) }}</div>
+          <div class="metric-desc">Total charges accrued</div>
+        </div>
+      </div>
+
+      <div class="details-top-row">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-user"></i>
+              <span>Profile</span>
+            </div>
+            <span class="det-status" [ngClass]="statusClass(d.player_info.status)">{{ typeLabel(d.player_info.status)
+              }}</span>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <table class="det-kv-table">
+              <tbody>
+                @for (row of playerRows(); track trackRow($index, row)) {
+                <tr>
+                  <th>{{ row.label }}</th>
+                  <td [class.det-accent]="row.highlight">{{ row.value }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-wallet"></i>
+              <span>Wallet</span>
+            </div>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <table class="det-kv-table">
+              <tbody>
+                @for (row of walletRows(); track trackRow($index, row)) {
+                <tr [class.det-kv-row--highlight]="row.highlight">
+                  <th>{{ row.label }}</th>
+                  <td [class.det-accent]="row.highlight">{{ row.value }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel panel--margin">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-chart-pie"></i>
+              <span>Margin</span>
+            </div>
+            @if (marginUtilization() != null) {
+            <span class="panel-tag">{{ fmtPercent(marginUtilization()) }} used</span>
+            }
+          </div>
+          <div class="panel-body">
+            @if (marginUtilization() != null) {
+            <div class="det-util-bar" aria-hidden="true">
+              <div class="det-util-fill" [style.width.%]="marginUtilization()"></div>
+            </div>
+            }
+            <table class="det-kv-table det-kv-table--inset">
+              <tbody>
+                @for (row of marginRows(); track trackRow($index, row)) {
+                <tr>
+                  <th>{{ row.label }}</th>
+                  <td [ngClass]="row.valueClass">{{ row.value }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <i class="fa-light fa-layer-group"></i>
+            <span>Leverage plan</span>
+          </div>
+          <span class="panel-tag">{{ d.leverage_plan.plan_code }}</span>
+        </div>
+        <div class="panel-body">
+          @if (d.leverage_plan.description) {
+          <p class="det-lead">{{ d.leverage_plan.description }}</p>
+          }
+          <div class="det-chip-row">
+            <span class="det-chip">Default {{ d.leverage_plan.leverage_ratio | number:'1.0-0' }}×</span>
+            <span class="det-chip">Margin call {{ d.leverage_plan.margin_call_level | number }}%</span>
+            <span class="det-chip">Stop out {{ d.leverage_plan.stop_out_level | number }}%</span>
+            <span class="det-chip">Since {{ fmtDate(d.leverage_plan.effective_from) }}</span>
+          </div>
+
+          <div class="details-split-row">
+            <div class="det-table-block">
+              <h3 class="det-subheading">Per instrument</h3>
+              @if (hasInstruments()) {
+              <div class="table-container">
+                <table class="det-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th class="right">Leverage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of d.leverage_plan.instruments; track trackInst($index, row)) {
+                    <tr>
+                      <td class="sym-name">{{ row.symbol }}</td>
+                      <td class="right">{{ row.leverage_ratio | number:'1.0-2' }}×</td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              } @else {
+              <p class="det-empty">No instrument overrides configured.</p>
+              }
+            </div>
+
+            <div class="det-table-block">
+              <h3 class="det-subheading">By market type</h3>
+              @if (hasMarketTypes()) {
+              <div class="table-container">
+                <table class="det-table">
+                  <thead>
+                    <tr>
+                      <th>Market</th>
+                      <th class="right">Leverage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of d.leverage_plan.market_types; track trackMt($index, row)) {
+                    <tr>
+                      <td class="sym-name">{{ row.name }}</td>
+                      <td class="right">{{ row.leverage_ratio | number:'1.0-2' }}×</td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              } @else {
+              <p class="det-empty">No market type overrides configured.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-split-row">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-receipt"></i>
+              <span>Trading charges</span>
+            </div>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <table class="det-kv-table">
+              <tbody>
+                @for (row of chargesRows(); track trackRow($index, row)) {
+                <tr>
+                  <th>{{ row.label }}</th>
+                  <td>{{ row.value }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-percent"></i>
+              <span>Brokerage</span>
+            </div>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <table class="det-kv-table">
+              <tbody>
+                @for (row of brokerageRows(); track trackRow($index, row)) {
+                <tr>
+                  <th>{{ row.label }}</th>
+                  <td>{{ row.value }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-split-row">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-shield-halved"></i>
+              <span>Risk limits</span>
+            </div>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <div class="table-container table-container--tall">
+              <table class="det-table det-table--kv">
+                <tbody>
+                  @for (row of riskRows(); track trackRow($index, row)) {
+                  <tr>
+                    <td class="det-key">{{ row.label }}</td>
+                    <td class="det-val" [ngClass]="booleanClass(row.value)">{{ row.value }}</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <i class="fa-light fa-sliders"></i>
+              <span>Trading permissions</span>
+            </div>
+          </div>
+          <div class="panel-body panel-body--flush">
+            <div class="table-container table-container--tall">
+              <table class="det-table det-table--kv">
+                <tbody>
+                  @for (row of permissionRows(); track trackRow($index, row)) {
+                  <tr>
+                    <td class="det-key">{{ row.label }}</td>
+                    <td class="det-val" [ngClass]="booleanClass(row.value)">{{ row.value }}</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    @if (!showInitialLoading && !error && !data) {
+    <div class="details-hint-block">
+      <i class="fa-light fa-circle-info"></i>
+      <p>No profile loaded yet. Tap <strong>Refresh</strong> to fetch your trading details.</p>
+    </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="pi-modal" role="dialog" aria-modal="true">
+  <div class="pi-sentiment">
+    <div class="pi-sentiment-dtl">
+      <div class="pi-sent-top">
+        <div class="pi-sent-label">{{ sentimentLabel }}</div>
+      </div>
+      <div class="pi-sent-sub">Traders’ Sentiment</div>
+    </div>
+    <div class="pi-sentiment-bar w-100">
+      <div class="pi-sent-bar">
+        <div class="pi-sell" [style.width.%]="sentimentSell"></div>
+        <div class="pi-buy" [style.width.%]="sentimentBuy"></div>
+      </div>
+      <div class="pi-sent-legend"><span>{{ sentimentSell }}%</span><span>{{ sentimentBuy }}%</span></div>
+    </div>
+  </div>
+
+  <div class="pi-grid">
+    <div class="pi-mini">
+      <div class="pi-mini-item">
+        <div class="pi-mini-label">Profit - 1 min</div>
+        <div class="pi-mini-value" [class.up]="profit1m>=50" [class.down]="profit1m<50">{{ profit1m }}%</div>
+      </div>
+      <div class="pi-mini-item">
+        <div class="pi-mini-label">Profit - 5+ min</div>
+        <div class="pi-mini-value" [class.up]="profit5p>=50" [class.down]="profit5p<50">{{ profit5p }}%</div>
+      </div>
+    </div>
+
+    <div class="pi-changes">
+      <div class="pi-change">
+        <div class="pi-change-h">5 min</div>
+        <div class="pi-change-v" [class.up]="(change5m||0) > 0" [class.down]="(change5m||0) < 0">{{ (change5m ?? 0) | number:'1.2-2' }}%</div>
+      </div>
+      <div class="pi-change">
+        <div class="pi-change-h">60 min</div>
+        <div class="pi-change-v" [class.up]="(change60m||0) > 0" [class.down]="(change60m||0) < 0">{{ (change60m ?? 0) | number:'1.2-2' }}%</div>
+      </div>
+      <div class="pi-change">
+        <div class="pi-change-h">1 day</div>
+        <div class="pi-change-v" [class.up]="(change1d||0) > 0" [class.down]="(change1d||0) < 0">{{ (change1d ?? 0) | number:'1.2-2' }}%</div>
+      </div>
+      <div class="pi-change">
+        <div class="pi-change-h">1 month</div>
+        <div class="pi-change-v" [class.up]="(change1mo||0) > 0" [class.down]="(change1mo||0) < 0">{{ formatSign(change1mo) }}</div>
+      </div>
+      <div class="pi-change">
+        <div class="pi-change-h">1 year</div>
+        <div class="pi-change-v" [class.up]="(change1y||0) > 0" [class.down]="(change1y||0) < 0">{{ formatSign(change1y) }}</div>
+      </div>
+      <div class="pi-change">
+        <div class="pi-change-h">YTD</div>
+        <div class="pi-change-v" [class.up]="(changeYtd||0) > 0" [class.down]="(changeYtd||0) < 0">{{ formatSign(changeYtd) }}</div>
+      </div>
+    </div>
+
+    <!-- <div class="pi-schedule">
+      <div class="pi-sch-title">Trading Schedule</div>
+      <div class="pi-table">
+        <div class="pi-tr" *ngFor="let s of schedule">
+          <div class="pi-td">{{ s.date }}</div>
+          <div class="pi-td">{{ s.weekday }}</div>
+          <div class="pi-td">{{ s.time }}</div>
+        </div>
+      </div>
+    </div> -->
+  </div>
+</div>

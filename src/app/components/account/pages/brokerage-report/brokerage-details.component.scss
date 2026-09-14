@@ -1,0 +1,107 @@
+@use './brokerage-report.component.scss';
+
+.page-header--premium .btn-back {
+  border-radius: 8px;
+  padding: 8px 14px;
+  min-height: 36px;
+  border: 1px solid var(--border-light);
+  background: var(--box-bg);
+  color: var(--main-text);
+
+  i {
+    font-size: 14px;
+  }
+
+  &:hover {
+    background: var(--layout-bg);
+    border-color: rgba(var(--primary-rgb), 0.25);
+  }
+}
+
+.filters-bar .filter-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--layout-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 6px 10px;
+
+  i {
+    font-size: 11px;
+    color: var(--normal-text);
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 12px;
+    color: var(--main-text);
+    width: 130px;
+  }
+}
+
+.filter-date-group--readonly {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-light);
+  background: var(--layout-bg);
+}
+
+.date-readonly {
+  font-size: 12px;
+  color: var(--normal-text);
+}
+
+.brokerage-table--details {
+  min-width: 560px;
+
+  .sym {
+    font-weight: 500;
+    color: var(--main-text);
+  }
+
+  .date-cell {
+    color: var(--normal-text);
+    font-size: 11px;
+  }
+}
+
+.timing-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--layout-bg);
+  border: 1px solid var(--border-light);
+  color: var(--normal-text);
+}
+
+.page-subtitle strong {
+  color: var(--main-text);
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+
+    .btn-back,
+    .btn-refresh {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  .filters-bar .filter-search {
+    width: 100%;
+
+    input {
+      width: 100%;
+      flex: 1;
+    }
+  }
+}

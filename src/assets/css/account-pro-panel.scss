@@ -1,0 +1,291 @@
+/* Professional panel chrome for the whole Account area (sidebar + inner pages).
+   Scoped under .acc-shell so trade screens are untouched. */
+
+.acc-shell {
+  /* ── Page headers ─────────────────────────────────────────── */
+  .page-header--premium {
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    overflow: hidden;
+  }
+
+  .page-header-inner {
+    padding: 14px 16px !important;
+    gap: 12px;
+  }
+
+  .ph-kicker {
+    font-size: 10px !important;
+    letter-spacing: 0.14em !important;
+    margin-bottom: 6px !important;
+    font-weight: 600 !important;
+  }
+
+  .page-title {
+    font-size: clamp(18px, 4.2vw, 24px) !important;
+    letter-spacing: -0.035em !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+  }
+
+  .page-subtitle {
+    margin-top: 6px !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    max-width: 64ch;
+  }
+
+  .page-header--premium .btn-refresh,
+  .page-header--premium .btn-back,
+  .header-actions .btn-refresh,
+  .header-actions .btn-back,
+  .btn-refresh--compact {
+    border-radius: 8px !important;
+    min-height: 36px !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+  }
+
+  .page-header--premium .btn-refresh:hover,
+  .page-header--premium .btn-back:hover,
+  .header-actions .btn-refresh:hover {
+    box-shadow: none !important;
+  }
+
+  .ph-sk-btn {
+    border-radius: 8px !important;
+    height: 36px !important;
+    width: 110px !important;
+  }
+
+  .ph-sk-title {
+    height: 22px !important;
+  }
+
+  /* ── Cards / panels / metrics ─────────────────────────────── */
+  .metric-card,
+  .panel,
+  .filter-bar,
+  .filter-card,
+  .table-card,
+  .data-card,
+  .sk-card,
+  .sk-panel,
+  .profile-row-panel,
+  .nav-shell,
+  .settings-card,
+  .section-card,
+  .ledger-card,
+  .report-card,
+  .kyc-card,
+  .method-card,
+  .summary-card {
+    border-radius: 12px !important;
+    box-shadow: var(--account-shadow-card) !important;
+  }
+
+  .metric-card::before,
+  .panel::before {
+    content: none !important;
+    box-shadow: none !important;
+    display: none !important;
+  }
+
+  .metric-card {
+    padding: 12px 14px !important;
+  }
+
+  .metric-card .metric-label,
+  .metric-card .mc-label {
+    font-size: 10px !important;
+    letter-spacing: 0.06em !important;
+    font-weight: 600 !important;
+  }
+
+  .metric-card .metric-value,
+  .metric-card .mc-value {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .panel-header {
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+
+  .panel-body {
+    padding: 12px 14px !important;
+  }
+
+  .metrics-grid,
+  .metrics-row,
+  .sk-metrics-row {
+    gap: 10px !important;
+  }
+
+  /* ── Filters / toolbars ───────────────────────────────────── */
+  .filter-bar,
+  .filters-row,
+  .toolbar-row {
+    border-radius: 12px !important;
+  }
+
+  .date-inp,
+  .filter-bar input,
+  .filter-bar select,
+  .panel-toolbar .date-inp {
+    border-radius: 8px !important;
+    min-height: 34px;
+    font-size: 12px !important;
+  }
+
+  .btn-apply,
+  .btn-filter,
+  .btn-primary,
+  .btn-secondary,
+  .btn:not(.acc-logout-dark):not(.acc-back-btn):not(.acc-menu-item) {
+    border-radius: 8px !important;
+  }
+
+  /* ── Tables ───────────────────────────────────────────────── */
+  .data-table .dt-head,
+  .dt-head {
+    font-size: 10px !important;
+    letter-spacing: 0.06em !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .data-table .dt-row,
+  .dt-row {
+    border-radius: 8px !important;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+    font-size: 12px !important;
+  }
+
+  table.table,
+  .table {
+    font-size: 12px !important;
+  }
+
+  table thead th {
+    font-size: 10px !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase;
+    font-weight: 600 !important;
+  }
+
+  .badge {
+    border-radius: 4px !important;
+    font-size: 10px !important;
+  }
+
+  /* ── Empty / error ────────────────────────────────────────── */
+  .empty-state,
+  .dash-error,
+  .assets-error,
+  .details-error {
+    border-radius: 12px !important;
+  }
+
+  /* ── Tabs ─────────────────────────────────────────────────── */
+  .tabs-row .tab-btn,
+  .tab-btn {
+    border-radius: 8px 8px 0 0 !important;
+    font-size: 12px !important;
+    min-height: 36px;
+  }
+
+  /* ── Settings / KYC denser shells ─────────────────────────── */
+  .settings-nav,
+  .settings-panel,
+  .kyc-shell,
+  .kyc-step-card {
+    border-radius: 12px !important;
+  }
+
+  /* Soften oversized avatar blocks on dashboard */
+  .profile-avatar {
+    width: 64px !important;
+    min-width: 64px !important;
+    min-height: 64px !important;
+    border-radius: 12px !important;
+    font-size: 26px !important;
+  }
+
+  .profile-row-inner {
+    padding: 16px !important;
+    gap: 14px !important;
+  }
+
+  .profile-display-name {
+    font-size: clamp(1.05rem, 3vw, 1.25rem) !important;
+  }
+
+  /* Deposit / Withdraw (different class names) */
+  .dep-head h1,
+  .wd-head h1 {
+    font-size: clamp(20px, 4vw, 24px) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  .dep-head p,
+  .wd-head p {
+    font-size: 12px !important;
+  }
+
+  .dep-tabs,
+  .wd-tabs {
+    border-radius: 10px !important;
+    padding: 3px !important;
+  }
+
+  .dep-tabs__btn,
+  .wd-tabs__btn {
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    min-height: 34px;
+    font-weight: 500 !important;
+  }
+
+  .dep-card,
+  .wd-card,
+  .dep-split,
+  .wd-split,
+  .dep-side,
+  .wd-side {
+    border-radius: 12px !important;
+  }
+
+  .dep-section-title,
+  .wd-section-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+/* Mobile: keep pro density */
+@media (max-width: 768px) {
+  .acc-shell {
+    .page-header-inner {
+      padding: 12px !important;
+    }
+
+    .page-header--premium .btn-refresh {
+      min-height: 40px !important;
+    }
+
+    .metric-card .metric-value,
+    .metric-card .mc-value {
+      font-size: 15px !important;
+    }
+  }
+}

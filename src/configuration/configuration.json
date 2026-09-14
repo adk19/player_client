@@ -1,0 +1,11 @@
+{
+  "environment": {
+    "api_url": "https://playerapi.bigtrade.cloud/api/",
+    "brand_code": "BRD0037",
+    "crypto_api_url": "https://mapi.bigtrade.cloud/v1",
+    "crypto_websocket_url": "https://bapi.bigtrade.cloud",
+    "mt5_websocket_url": "https://hub.bigtrade.cloud",
+    "trading_socket_url": "https://te.bigtrade.cloud",
+    "socket_url": "https://brandapi.bigtrade.cloud"
+  }
+}

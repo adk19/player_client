@@ -1,0 +1,695 @@
+﻿<div class="main-trade" [class.trade-disabled-root]="!hasMarketSelected" [class.main-trade--desktop]="isDesktopLayout">
+
+  <div class="main-trade-shell" [style.--trade-pos-h.px]="isDesktopLayout ? positionsRowHeight : null">
+
+    <div class="main-trade-top trade-top-grid" [style.grid-template-columns]="tradeTopGridColumns">
+
+      <div class="main-trade-panel main-trade-left">
+
+        <app-watchlist (marketSelected)="onMarketSelected($event)" [isInsideTradePage]="true"></app-watchlist>
+
+      </div>
+
+      <div class="trade-resizer trade-resizer--col trade-resizer--between-left" *ngIf="isDesktopLayout" role="separator"
+        aria-orientation="vertical" aria-label="Resize watchlist"
+        [class.trade-resizer--dragging]="activeResizeMode === 'left'" (pointerdown)="startLayoutResize('left', $event)">
+        <span class="trade-resizer__line" aria-hidden="true"></span>
+      </div>
+
+      <div class="main-trade-panel main-trade-chart">
+        <!-- Disabled overlay when no market is selected -->
+        <div class="trade-empty-overlay" *ngIf="!hasMarketSelected">
+          <div class="trade-empty-card">
+            <div class="trade-empty-icon">
+              <i class="fa-regular fa-chart-bar"></i>
+            </div>
+            <h3 class="trade-empty-title">Add a market to your watchlist</h3>
+            <p class="trade-empty-desc">
+              Choose a pair from the left watchlist to see its live chart and place trades here.
+            </p>
+          </div>
+        </div>
+
+        <app-crypto-chart-view #chart [symbol]="(base + quote)" [pairDetail]="getPairDetail(activeSymbol)"
+          [livePrice]="priceOf(activeSymbol)" [theme]="'auto'" [initialInterval]="activeInterval"
+          [currentSlug]="currentSlug" [initialChartType]="activeChartType" [pendingOrders]="chartPendingOrders"
+          [openPositions]="chartOpenPositions" (intervalChanged)="onChildIntervalChange($event)"
+          (chartTypeChanged)="onChildChartTypeChange($event)"
+          (klinePriceUpdate)="onKlinePriceUpdate($event)"></app-crypto-chart-view>
+
+      </div>
+
+      <div class="trade-resizer trade-resizer--col trade-resizer--between-right" *ngIf="isDesktopLayout"
+        role="separator" aria-orientation="vertical" aria-label="Resize order panel"
+        [class.trade-resizer--dragging]="activeResizeMode === 'right'"
+        (pointerdown)="startLayoutResize('right', $event)">
+        <span class="trade-resizer__line" aria-hidden="true"></span>
+      </div>
+
+      <div class="main-trade-panel main-trade-right" [class.offcanvas-open]="showTradePanel">
+
+        <div class="main-trade-right-main-ctx">
+
+          <div class="main-trade-slip-main">
+            <!-- Click-blocking layer for the slip when disabled -->
+            <div class="trade-panel-disabled-mask" *ngIf="!hasMarketSelected"></div>
+
+            <div class="trade-slip ts-mt5-panel">
+
+              <ng-template #tradeSlipVolumeBlock>
+                <div class="ts-row ts-row-volume">
+                  <div class="ts-row-volume-top ts-row-volume-top--modes">
+                    <div class="ts-row-volume-label-wrap">
+                      @if (tradeVolumeInputMode === 'lots') {
+                      <div class="ts-row-label ts-row-label-caps">Volume (lots)</div>
+                      } @else if (tradeVolumeInputMode === 'qty') {
+                      <div class="ts-row-label ts-row-label-caps">Volume (qty)</div>
+                      } @else {
+                      <div class="ts-row-label ts-row-label-caps">Amount ({{ brandCurrencyCode }})</div>
+                      }
+                    </div>
+                    @if (tradeVolumeInputMode === 'lots') {
+                    <div class="ts-row-meta">{{ tradeSlip.volume | number:'1.2-2' }} lot</div>
+                    } @else if (tradeVolumeInputMode === 'qty') {
+                    <div class="ts-row-meta">{{ tradeSlip.volume | number:'1.2-4' }} qty</div>
+                    } @else {
+                    <div class="ts-row-meta ts-row-meta-amount-hint"><span aria-hidden="true">&#8776;</span> {{
+                      tradeSlipVolumeLots | number:'1.0-8' }} lots</div>
+                    }
+                  </div>
+                  @if (tradeVolumeInputMode === 'lots' || tradeVolumeInputMode === 'qty') {
+                  <div class="ts-row-volume-btm">
+                    <div class="ts-row-control">
+                      <button class="ts-step" type="button" (click)="decreaseTradeSlipVolume()"
+                        [disabled]="!hasMarketSelected || tradeSlip.volume <= 0.01">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.volume"
+                        [disabled]="!hasMarketSelected" [step]="tradeVolumeStep" min="0.01" max="1000000"
+                        (blur)="clampVolume()" />
+                      <button class="ts-step" type="button" (click)="increaseTradeSlipVolume()"
+                        [disabled]="!hasMarketSelected || tradeSlip.volume >= 1000000">+</button>
+                      <div class="ts-mode-dd" (click)="$event.stopPropagation()">
+                        <button class="ts-mode-dd-trigger" type="button" [disabled]="!hasMarketSelected"
+                          (click)="toggleVolumeModeDropdown()">
+                          <span class="ts-mode-dd-label">{{ tradeVolumeInputMode === 'lots' ? 'Lots' : 'Qty' }}</span>
+                          <i class="fa-solid fa-caret-down"></i>
+                        </button>
+                        <div class="ts-mode-dd-menu" *ngIf="showVolumeModeDropdown">
+                          <button type="button" class="ts-mode-dd-item" [class.active]="tradeVolumeInputMode === 'lots'"
+                            (click)="selectVolumeMode('lots')">Lots</button>
+                          <button type="button" class="ts-mode-dd-item" [class.active]="tradeVolumeInputMode === 'qty'"
+                            (click)="selectVolumeMode('qty')">Qty</button>
+                          <button type="button" class="ts-mode-dd-item" [disabled]="!amountModeRateAvailable"
+                            (click)="selectVolumeMode('amount')">
+                            {{ brandCurrencyCode || 'USD' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ts-vol-presets">
+                      @for (v of volumePresets; track v) {
+                      <button class="ts-vol-preset" type="button" (click)="setTradeSlipVolume(v)"
+                        [class.active]="isTradeSlipVolumePresetActive(v)" [disabled]="!hasMarketSelected">{{ v |
+                        number:'1.1-4' }}</button>
+                      }
+                    </div>
+                  </div>
+                  } @else {
+                  <div class="ts-row-volume-btm">
+                    <div class="ts-row-control">
+                      <button class="ts-step" type="button" (click)="decreaseTradeSlipBrandAmount()"
+                        [disabled]="!hasMarketSelected || tradeSlipBrandAmount <= 0">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlipBrandAmount"
+                        [disabled]="!hasMarketSelected" [step]="tradeSlipBrandAmountStep" min="0"
+                        (ngModelChange)="onTradeSlipBrandAmountInput()" (blur)="clampBrandAmount()" />
+                      <button class="ts-step" type="button" (click)="increaseTradeSlipBrandAmount()"
+                        [disabled]="!hasMarketSelected">+</button>
+                      <div class="ts-mode-dd" (click)="$event.stopPropagation()">
+                        <button class="ts-mode-dd-trigger" type="button" [disabled]="!hasMarketSelected"
+                          (click)="toggleVolumeModeDropdown()">
+                          <span class="ts-mode-dd-label">{{ brandCurrencyCode || 'USD' }}</span>
+                          <i class="fa-solid fa-caret-down"></i>
+                        </button>
+                        <div class="ts-mode-dd-menu" *ngIf="showVolumeModeDropdown">
+                          <button type="button" class="ts-mode-dd-item" (click)="selectVolumeMode('lots')">Lots</button>
+                          <button type="button" class="ts-mode-dd-item" (click)="selectVolumeMode('qty')">Qty</button>
+                          <button type="button" class="ts-mode-dd-item active" (click)="selectVolumeMode('amount')">
+                            {{ brandCurrencyCode || 'USD' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ts-amt-hint-row" *ngIf="walletBalanceNumber > 0">
+                      <span class="ts-amt-hint">Balance {{ walletBalanceDisplay }}</span>
+                      <span class="ts-amt-hint-note">Sends {{ tradeSlip.volume | number:'1.0-8' }} lots</span>
+                    </div>
+                    <div class="ts-vol-presets ts-amt-presets">
+                      @for (a of TRADE_SLIP_BRAND_AMOUNT_PRESETS; track a) {
+                      <button class="ts-vol-preset" type="button" (click)="setTradeSlipBrandAmountPreset(a)"
+                        [class.active]="isTradeSlipBrandAmountPresetActive(a)"
+                        [disabled]="!hasMarketSelected || isBrandAmountPresetDisabled(a)">{{ a | number:'1.0-0'
+                        }}</button>
+                      }
+                    </div>
+                    <div class="ts-vol-presets ts-pct-presets" *ngIf="walletBalanceNumber > 0">
+                      <button class="ts-vol-preset" type="button" (click)="setBrandAmountPercentOfBalance(25)"
+                        [disabled]="!hasMarketSelected">25%</button>
+                      <button class="ts-vol-preset" type="button" (click)="setBrandAmountPercentOfBalance(50)"
+                        [disabled]="!hasMarketSelected">50%</button>
+                      <button class="ts-vol-preset" type="button" (click)="setBrandAmountPercentOfBalance(100)"
+                        [disabled]="!hasMarketSelected">100%</button>
+                    </div>
+                  </div>
+                  }
+                </div>
+              </ng-template>
+
+              <!-- Title Bar - display only -->
+              <div class="ts-header">
+                <div class="ts-title-left">
+                  <span class="ts-title"
+                    [ngClass]="selectedOrderType.color === 'buy' ? 'ts-title-buy' : selectedOrderType.color === 'sell' ? 'ts-title-sell' : ''">
+                    {{ selectedOrderType.label }}
+                  </span>
+                </div>
+                <button class="ts-close-btn" type="button" *ngIf="isPendingOrder" (click)="selectOrderType(1)">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <!-- Leverage for this symbol (profile max default; gear opens picker) -->
+              <div class="ts-leverage-row">
+                <span class="ts-leverage-label">Leverage</span>
+                <div class="ts-leverage-selector-wrap">
+                  <div class="ts-leverage-selector" [class.ts-leverage-selector--disabled]="!hasMarketSelected"
+                    [attr.aria-label]="'Leverage ' + tradeLeverage + 'x'">
+                    <span class="ts-leverage-selector-value" [attr.title]="leverageMaxHint">{{ tradeLeverage }}x</span>
+                    <button type="button" class="ts-leverage-gear-btn"
+                      [class.ts-leverage-gear-btn--active]="showLeveragePicker" [disabled]="!hasMarketSelected"
+                      (click)="openLeveragePicker($event)" [attr.aria-expanded]="showLeveragePicker"
+                      aria-label="Customize leverage">
+                      <i class="fa-light fa-gear" aria-hidden="true"></i>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Order Type Select (above all forms) -->
+              <div class="ts-order-type-row">
+                <select class="ts-order-type-select" [ngModel]="selectedOrderTypeId" [disabled]="!hasMarketSelected"
+                  (ngModelChange)="selectOrderType(+$event)">
+                  @for (ot of ORDER_TYPES; track ot.id) {
+                  <option [ngValue]="ot.id">{{ ot.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- MARKET EXECUTION FORM -->
+              <div class="market-trade-form-main" *ngIf="!isPendingOrder">
+
+                <ng-container *ngTemplateOutlet="tradeSlipVolumeBlock"></ng-container>
+
+                <!-- Stop Loss / Take Profit Row -->
+                <div class="ts-row ts-row-sl-tp">
+                  <div class="ts-field">
+                    <div class="ts-field-label">Stop Loss</div>
+                    <div class="ts-field-stepper">
+                      <button class="ts-step" type="button" (click)="stepSlPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.stopLoss"
+                        [disabled]="!hasMarketSelected" placeholder="0" />
+                      <button class="ts-step" type="button" (click)="stepSlPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                  </div>
+                  <div class="ts-field">
+                    <div class="ts-field-label">Take Profit</div>
+                    <div class="ts-field-stepper">
+                      <button class="ts-step" type="button" (click)="stepTpPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.takeProfit"
+                        [disabled]="!hasMarketSelected" placeholder="0" />
+                      <button class="ts-step" type="button" (click)="stepTpPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="prices-main">
+                  <!-- Prices Row -->
+                  <div class="ts-row ts-row-prices">
+                    <div class="ts-price-cell ts-price-sell">{{ displayBidStr }}</div>
+                    <div class="ts-price-cell ts-price-buy">{{ displayAskStr }}</div>
+                  </div>
+                  <!-- Action Buttons -->
+                  <div class="ts-row ts-row-actions">
+                    <button class="ts-btn ts-btn-sell" type="button" (click)="submitMarketOrder('sell')"
+                      [disabled]="!hasMarketSelected || sellDisabled">
+                      Sell by Market
+                    </button>
+                    <button class="ts-btn ts-btn-buy" type="button" (click)="submitMarketOrder('buy')"
+                      [disabled]="!hasMarketSelected || buyDisabled">
+                      Buy by Market
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Trade Guide - desktop only -->
+                <div class="ts-trade-guide">
+                  <div class="tg-currency-warn" *ngIf="isExchangeRateMissing">
+                    <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span>Trading in this symbol's base currency is not available on the platform yet.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="isUtcgMissing">
+                    <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span>Market timezone (UTC offset) is not available. Trading is disabled until it loads.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="!isUtcgMissing && hasTradingHours && !computedMarketOpen">
+                    <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span>Market is closed. You cannot place trades until the market opens.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="!hasTradingHours && !computedMarketOpen">
+                    <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span>Market is closed. You cannot place trades right now.</span>
+                  </div>
+                  <div class="tg-title"><i class="fa-light fa-circle-info"></i> Order Summary</div>
+                  <div class="tg-rows">
+                    <div class="tg-row">
+                      <span class="tg-key">Symbol</span>
+                      <span class="tg-val">{{ getPairDetail(activeSymbol)?.['market'] || activeSymbol }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Leverage</span>
+                      <span class="tg-val">{{ tradeLeverage }}x</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Volume</span>
+                      <span class="tg-val">{{ tradeSlipVolumeLots | number:'1.0-8' }} lot</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Lot Size</span>
+                      <span class="tg-val">{{ activeLotSize | number:'1.0-4' }} per lot</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Total Qty</span>
+                      <span class="tg-val">{{ tradeSlipQuantity | number:'1.0-4' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeVolumeInputMode === 'amount' && tradeSlipBrandAmount > 0">
+                      <span class="tg-key">Notional</span>
+                      <span class="tg-val">{{ tradeSlipBrandAmount | number:'1.2-2' }} {{ brandCurrencyCode }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Notional Value</span>
+                      <span class="tg-val">{{ tradeNotionalRaw }}</span>
+                    </div>
+                    <div class="tg-row tg-row-highlight" *ngIf="hasTradeNotionalBrand">
+                      <span class="tg-key">In Brand Currency</span>
+                      <span class="tg-val tg-brand">{{ tradeNotionalBrand }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Required Margin</span>
+                      <span class="tg-val">{{ tradeMarginRequiredRaw }}</span>
+                    </div>
+                    <div class="tg-row tg-row-highlight" *ngIf="hasTradeMarginRequiredBrand">
+                      <span class="tg-key">Required Margin (Brand)</span>
+                      <span class="tg-val tg-brand">{{ tradeMarginRequiredBrand }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeSlip.stopLoss > 0">
+                      <span class="tg-key">Stop Loss</span>
+                      <span class="tg-val tg-red">{{ tradeSlip.stopLoss | number:'1.2-4' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeSlip.takeProfit > 0">
+                      <span class="tg-key">Take Profit</span>
+                      <span class="tg-val tg-green">{{ tradeSlip.takeProfit | number:'1.2-4' }}</span>
+                    </div>
+                    <div class="tg-row tg-row-divider" *ngIf="marketHoursStatus !== null">
+                      <span class="tg-key">Market Status</span>
+                      <span class="tg-val" [ngClass]="marketHoursStatus!.isOpen ? 'tg-green' : 'tg-red'">
+                        <i class="fa-solid fa-circle" style="font-size:6px;vertical-align:middle;margin-right:4px;"></i>
+                        {{ marketHoursStatus!.isOpen ? 'Open' : 'Closed' }}
+                      </span>
+                    </div>
+                    <div class="tg-row" *ngIf="marketHoursStatus?.isOpen && marketCloseCountdown">
+                      <span class="tg-key">Closes In</span>
+                      <span class="tg-val tg-mono">{{ marketCloseCountdown }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="marketHoursStatus?.isOpen && marketHoursStatus?.nextCloseUtc">
+                      <span class="tg-key">Closes At</span>
+                      <span class="tg-val">{{ marketHoursStatus!.nextCloseUtc | date:'HH:mm' }} (your time)</span>
+                    </div>
+                    <div class="tg-row" *ngIf="marketHoursStatus && !marketHoursStatus.isOpen && marketOpenCountdown">
+                      <span class="tg-key">Opens In</span>
+                      <span class="tg-val tg-mono">{{ marketOpenCountdown }}</span>
+                    </div>
+                    <div class="tg-row"
+                      *ngIf="marketHoursStatus && !marketHoursStatus.isOpen && marketHoursStatus.nextOpenUtc">
+                      <span class="tg-key">Opens At</span>
+                      <span class="tg-val tg-green">{{ marketHoursStatus!.nextOpenUtc | date:'EEE HH:mm' }} (your
+                        time)</span>
+                    </div>
+                    <ng-container *ngIf="todayMarketSessions.length">
+                      <div class="tg-row">
+                        <span class="tg-key">Today's Hours</span>
+                        <span class="tg-val">
+                          <span *ngFor="let s of todayMarketSessions; let last = last">
+                            {{ s.start }}&#8211;{{ s.end }}<span *ngIf="!last">, </span>
+                          </span>
+                        </span>
+                      </div>
+                    </ng-container>
+                    <div class="tg-row" *ngIf="marketHoursStatus !== null && todayMarketSessions.length === 0">
+                      <span class="tg-key">Today's Hours</span>
+                      <span class="tg-val tg-red">Closed today</span>
+                    </div>
+                  </div>
+                  <div class="tg-notes">
+                    <div class="tg-note"><i class="fa-light fa-triangle-exclamation"></i> Prices may change before
+                      execution.</div>
+                    <div class="tg-note"><i class="fa-light fa-shield-halved"></i> Ensure sufficient margin before
+                      placing order.</div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- PENDING ORDER FORM (Limit / Stop / Stop-Limit) -->
+              @if(isPendingOrder){
+              <div class="market-trade-form-main pending-order-form">
+
+                <ng-container *ngTemplateOutlet="tradeSlipVolumeBlock"></ng-container>
+
+                <!-- Price Row: correct labels per order type -->
+                <div class="ts-row ts-row-sl-tp">
+                  <!-- Primary price field -->
+                  <div class="ts-field" [class.ts-field-full]="!needsLimitPrice">
+                    <div class="ts-field-label">
+                      @if (needsStopPrice) { Stop Price }
+                      @else { Price }
+                    </div>
+                    <div class="ts-field-stepper" [class.input-error]="!!pendingPriceError">
+                      <button class="ts-step" type="button"
+                        (click)="needsStopPrice ? stepStopPrice(-1) : stepLimitPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number"
+                        [ngModel]="needsStopPrice ? tradeSlip.stopPrice : tradeSlip.limitPrice"
+                        [disabled]="!hasMarketSelected"
+                        (ngModelChange)="needsStopPrice ? (tradeSlip.stopPrice = $event) : (tradeSlip.limitPrice = $event)"
+                        placeholder="0" />
+                      <button class="ts-step" type="button"
+                        (click)="needsStopPrice ? stepStopPrice(1) : stepLimitPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                    <div class="ts-field-error text-truncate" *ngIf="pendingPriceError">{{ pendingPriceError }}</div>
+                    <div class="ts-field-hint text-truncate" *ngIf="!pendingPriceError && pendingPriceHint">{{
+                      pendingPriceHint }}</div>
+                  </div>
+                  <!-- Limit Price â€” only for BUY_STOP_LIMIT / SELL_STOP_LIMIT -->
+                  <div class="ts-field" *ngIf="needsLimitPrice">
+                    <div class="ts-field-label">Limit Price</div>
+                    <div class="ts-field-stepper" [class.input-error]="!!pendingLimitPriceError">
+                      <button class="ts-step" type="button" (click)="stepLimitPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.limitPrice"
+                        [disabled]="!hasMarketSelected" placeholder="0" />
+                      <button class="ts-step" type="button" (click)="stepLimitPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                    <div class="ts-field-error" *ngIf="pendingLimitPriceError">{{ pendingLimitPriceError }}</div>
+                  </div>
+                </div>
+
+                <!-- Stop Loss / Take Profit -->
+                <div class="ts-row ts-row-sl-tp">
+                  <div class="ts-field">
+                    <div class="ts-field-label">Stop Loss</div>
+                    <div class="ts-field-stepper">
+                      <button class="ts-step" type="button" (click)="stepSlPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.stopLoss"
+                        [disabled]="!hasMarketSelected" placeholder="0" />
+                      <button class="ts-step" type="button" (click)="stepSlPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                  </div>
+                  <div class="ts-field">
+                    <div class="ts-field-label">Take Profit</div>
+                    <div class="ts-field-stepper">
+                      <button class="ts-step" type="button" (click)="stepTpPrice(-1)"
+                        [disabled]="!hasMarketSelected">-</button>
+                      <input class="ts-value-input" type="number" [(ngModel)]="tradeSlip.takeProfit"
+                        [disabled]="!hasMarketSelected" placeholder="0" />
+                      <button class="ts-step" type="button" (click)="stepTpPrice(1)"
+                        [disabled]="!hasMarketSelected">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Expiration -->
+                <div class="ts-row ts-row-expiry">
+                  <div class="ts-field ts-field-full">
+                    <div class="ts-field-label">Expiration</div>
+                    <div class="ts-expiry-select-wrap">
+                      <select class="ts-expiry-select" [(ngModel)]="tradeSlip.expiration"
+                        [disabled]="!hasMarketSelected">
+                        @for (exp of EXPIRATION_TYPES; track exp) {
+                        <option [value]="exp">{{ exp }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Custom date/datetime picker - only for Custom Date / Custom DateTime -->
+                <div class="ts-row"
+                  *ngIf="tradeSlip.expiration === 'Custom Date' || tradeSlip.expiration === 'Custom DateTime'">
+                  <div class="ts-field ts-field-full">
+                    <div class="ts-field-label">{{ tradeSlip.expiration === 'Custom Date' ? 'Select Date' : 'Select Date
+                      & Time' }}</div>
+                    <input class="ts-expiry-date-input"
+                      [type]="tradeSlip.expiration === 'Custom Date' ? 'date' : 'datetime-local'"
+                      [(ngModel)]="tradeSlip.expirationDate" [disabled]="!hasMarketSelected"
+                      [min]="tradeSlip.expiration === 'Custom Date' ? todayDateStr : todayDateTimeStr" />
+                  </div>
+                </div>
+
+                <!-- Comment -->
+                <!-- removed: comment field not needed -->
+                <!-- Place Order Button -->
+                <button class="ts-btn ts-btn-place-order" type="button"
+                  [ngClass]="isBuySidePending ? 'ts-btn-place-buy' : 'ts-btn-place-sell'"
+                  [disabled]="!hasMarketSelected || !pendingOrderValid" (click)="submitPendingOrder()">
+                  Place order
+                </button>
+
+                <!-- Order Summary â€” same style as Market Execution's ts-trade-guide -->
+                <div class="ts-trade-guide">
+                  <div class="tg-currency-warn" *ngIf="isExchangeRateMissing">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Trading in this symbol's base currency is not available on the platform yet.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="isUtcgMissing">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Market timezone (UTC offset) is not available. Trading is disabled until it loads.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="!isUtcgMissing && hasTradingHours && !computedMarketOpen">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Market is closed. You cannot place trades until the market opens.</span>
+                  </div>
+                  <div class="tg-currency-warn" *ngIf="!hasTradingHours && !computedMarketOpen">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Market is closed. You cannot place trades right now.</span>
+                  </div>
+                  <div class="tg-title"><i class="fa-light fa-circle-info"></i> Order Summary</div>
+                  <div class="tg-rows">
+                    <div class="tg-row">
+                      <span class="tg-key">Symbol</span>
+                      <span class="tg-val">{{ activeSymbol }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Type</span>
+                      <span class="tg-val" [ngClass]="isBuySidePending ? 'tg-brand' : 'tg-red'">{{
+                        selectedOrderType.label }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Leverage</span>
+                      <span class="tg-val">{{ tradeLeverage }}x</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Volume</span>
+                      <span class="tg-val">{{ tradeSlip.volume | number:'1.0-8' }} lot</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Lot Size</span>
+                      <span class="tg-val">{{ activeLotSize | number:'1.0-4' }} per lot</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Total Qty</span>
+                      <span class="tg-val">{{ tradeSlipQuantity | number:'1.0-4' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeVolumeInputMode === 'amount' && tradeSlipBrandAmount > 0">
+                      <span class="tg-key">Notional</span>
+                      <span class="tg-val">{{ tradeSlipBrandAmount | number:'1.2-2' }} {{ brandCurrencyCode }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Notional Value</span>
+                      <span class="tg-val">{{ tradeNotionalRaw }}</span>
+                    </div>
+                    <div class="tg-row tg-row-highlight" *ngIf="hasTradeNotionalBrand">
+                      <span class="tg-key">In Brand Currency</span>
+                      <span class="tg-val tg-brand">{{ tradeNotionalBrand }}</span>
+                    </div>
+                    <div class="tg-row">
+                      <span class="tg-key">Required Margin</span>
+                      <span class="tg-val">{{ tradeMarginRequiredRaw }}</span>
+                    </div>
+                    <div class="tg-row tg-row-highlight" *ngIf="hasTradeMarginRequiredBrand">
+                      <span class="tg-key">Required Margin (Brand)</span>
+                      <span class="tg-val tg-brand">{{ tradeMarginRequiredBrand }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="needsStopPrice && tradeSlip.stopPrice > 0">
+                      <span class="tg-key">Stop Price</span>
+                      <span class="tg-val tg-mono">{{ tradeSlip.stopPrice | number:'1.2-5' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeSlip.limitPrice > 0">
+                      <span class="tg-key">{{ needsLimitPrice ? 'Limit Price' : 'Price' }}</span>
+                      <span class="tg-val tg-mono">{{ tradeSlip.limitPrice | number:'1.2-5' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeSlip.stopLoss > 0">
+                      <span class="tg-key">Stop Loss</span>
+                      <span class="tg-val tg-red">{{ tradeSlip.stopLoss | number:'1.2-5' }}</span>
+                    </div>
+                    <div class="tg-row" *ngIf="tradeSlip.takeProfit > 0">
+                      <span class="tg-key">Take Profit</span>
+                      <span class="tg-val tg-green">{{ tradeSlip.takeProfit | number:'1.2-5' }}</span>
+                    </div>
+                    <div class="tg-row tg-row-divider">
+                      <span class="tg-key">Expiration</span>
+                      <span class="tg-val">{{ tradeSlip.expiration }}{{ tradeSlip.expirationDate ? ' Â· ' +
+                        tradeSlip.expirationDate : '' }}</span>
+                    </div>
+                  </div>
+                  <div class="tg-notes">
+                    <div class="tg-note"><i class="fa-light fa-triangle-exclamation"></i> Order will execute when price
+                      reaches the set level.</div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trade-resizer trade-resizer--row" *ngIf="isDesktopLayout" role="separator" aria-orientation="horizontal"
+      aria-label="Resize positions panel" [class.trade-resizer--dragging]="activeResizeMode === 'positions'"
+      (pointerdown)="startLayoutResize('positions', $event)">
+      <span class="trade-resizer__line" aria-hidden="true"></span>
+    </div>
+
+    <div class="main-trade-positions">
+      <div class="trade-panel-disabled-mask positions-mask" *ngIf="!hasMarketSelected"></div>
+      <app-positions [isInsideTradePage]="true" [isDesktopTradeLayout]="isDesktopLayout"></app-positions>
+    </div>
+
+  </div>
+
+  <!-- Sticky Place Order button - always visible at bottom of chart -->
+  <div class="trade-sticky-currency-warn"
+    *ngIf="hasMarketSelected && (isExchangeRateMissing || isUtcgMissing || !computedMarketOpen)">
+    <div class="tg-currency-warn" *ngIf="isExchangeRateMissing">
+      <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span>Trading in this symbol's base currency is not available on the platform yet.</span>
+    </div>
+    <div class="tg-currency-warn" *ngIf="isUtcgMissing">
+      <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span>Market timezone (UTC offset) is not available. Trading is disabled until it loads.</span>
+    </div>
+    <div class="tg-currency-warn" *ngIf="!isUtcgMissing && !computedMarketOpen">
+      <span class="icon-span"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span>Market is closed. You cannot place trades right now.</span>
+    </div>
+  </div>
+  <div class="trade-sticky-btn-wrap">
+    <div class="trade-sticky-prices-main">
+      <div class="trade-sticky-ts-row ts-row-prices">
+        <div class="trade-sticky-ts-price-cell ts-price-sell">{{ displayBidStr }}</div>
+        <div class="trade-sticky-ts-price-cell ts-price-buy">{{ displayAskStr }}</div>
+      </div>
+    </div>
+    <button class="trade-sticky-btn" (click)="openTradePanel()"
+      [disabled]="!hasMarketSelected || isExchangeRateMissing">
+      Place Order
+    </button>
+  </div>
+
+  <div class="trade-offcanvas-backdrop" *ngIf="showTradePanel" (click)="closeTradePanel()"></div>
+
+  <!-- Desktop: floating leverage picker (root level — correct click stacking) -->
+  <div class="ts-leverage-popover" *ngIf="showLeveragePicker && !isTradeMobileViewport" [ngStyle]="leveragePopoverStyle"
+    (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()" role="dialog"
+    aria-label="Select leverage">
+    <ng-container *ngTemplateOutlet="leveragePickerBody"></ng-container>
+  </div>
+
+  <!-- Mobile: leverage picker offcanvas (above trade panel) -->
+  <div class="ts-leverage-offcanvas-backdrop" *ngIf="showLeveragePicker && isTradeMobileViewport"
+    (click)="closeLeveragePicker()" aria-hidden="true"></div>
+  <div class="ts-leverage-offcanvas" [class.ts-leverage-offcanvas--open]="showLeveragePicker && isTradeMobileViewport"
+    (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()" role="dialog"
+    aria-label="Select leverage">
+    <div class="ts-leverage-offcanvas-handle" aria-hidden="true"></div>
+    <ng-container *ngIf="showLeveragePicker && isTradeMobileViewport">
+      <ng-container *ngTemplateOutlet="leveragePickerBody"></ng-container>
+    </ng-container>
+  </div>
+
+  <ng-template #leveragePickerBody>
+    <div class="ts-lev-picker" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+      <div class="ts-lev-picker-head">
+        <h3 class="ts-lev-picker-title">Select Leverage</h3>
+        <button type="button" class="ts-lev-picker-close" (click)="closeLeveragePicker()" aria-label="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="ts-lev-picker-meta">
+        <span class="ts-lev-picker-symbol">{{ activeSymbol || '—' }}</span>
+        <span class="ts-lev-picker-side" [ngClass]="leveragePickerSideClass">{{ leveragePickerSideLabel }}</span>
+      </div>
+      <div class="ts-lev-picker-stepper">
+        <button type="button" class="ts-lev-step" (click)="stepLeveragePickerDraft(-1)"
+          [disabled]="leveragePickerDraft <= leverageMin">−</button>
+        <input class="ts-lev-step-input" type="number" inputmode="numeric" [min]="leverageMin" [max]="leverageMax"
+          [attr.max]="leverageMax" [(ngModel)]="leveragePickerDraft" (ngModelChange)="onLeveragePickerDraftInput()"
+          (blur)="onLeveragePickerBlur()" (keydown)="onLeveragePickerKeydown($event)" />
+        <button type="button" class="ts-lev-step" (click)="stepLeveragePickerDraft(1)"
+          [disabled]="leveragePickerDraft >= leverageMax">+</button>
+      </div>
+      <div class="ts-lev-slider-wrap" [style.--lev-fill.%]="leverageSliderFillPct">
+        <div class="ts-lev-slider-rail" aria-hidden="true">
+          <div class="ts-lev-slider-track"></div>
+          <div class="ts-lev-slider-fill"></div>
+        </div>
+        <input class="ts-lev-slider" type="range" [min]="leverageMin" [max]="leverageMax" step="1"
+          [(ngModel)]="leveragePickerDraft" (ngModelChange)="onLeveragePickerDraftInput()" />
+        <div class="ts-lev-slider-scale" aria-hidden="true">
+          @for (pos of leverageSliderMinorMarkPositions; track pos) {
+          <span class="ts-lev-scale-mark ts-lev-scale-mark--minor" [style.left.%]="pos"></span>
+          }
+          @for (tick of leverageSliderTicks; track tick) {
+          <span class="ts-lev-scale-mark ts-lev-scale-mark--major" [style.left.%]="leverageTickPosition(tick)"></span>
+          }
+        </div>
+        <div class="ts-lev-slider-ticks">
+          @for (tick of leverageSliderTicks; track tick) {
+          <span class="ts-lev-tick" [class.ts-lev-tick--active]="isLeverageTickActive(tick)"
+            [style.left.%]="leverageTickPosition(tick)">{{ tick }}x</span>
+          }
+        </div>
+      </div>
+      <p class="ts-lev-hint">Range {{ leverageMin }}x – {{ leverageMax }}x · {{ leverageMaxHint }}</p>
+      <button type="button" class="ts-lev-confirm" (click)="confirmLeveragePicker()">Confirm</button>
+    </div>
+  </ng-template>
+
+</div>

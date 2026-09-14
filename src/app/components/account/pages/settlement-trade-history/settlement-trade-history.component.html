@@ -1,0 +1,240 @@
+<div class="trade-history-page">
+  <div class="trade-history-shell">
+
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account · Settlement</div>
+          <h1 class="page-title">Settlement Trade History</h1>
+          <p class="page-subtitle">
+            Review closed trades by symbol, date range, and profit or loss outcome.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-back" (click)="goBack()">
+            <i class="fa-light fa-arrow-left"></i>
+            <span>Back</span>
+          </button>
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="filter-search">
+        <i class="fa-light fa-magnifying-glass"></i>
+        <input
+          type="text"
+          placeholder="Search symbol…"
+          [(ngModel)]="filterSymbol"
+          (ngModelChange)="onSymbolChange()" />
+      </div>
+
+      <div class="filter-group" *ngIf="symbols.length">
+        <select [(ngModel)]="filterSymbol" (ngModelChange)="onFilterChange()">
+          <option value="">All Symbols</option>
+          <option *ngFor="let s of symbols" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <select [(ngModel)]="filterPlType" (ngModelChange)="onFilterChange()">
+          <option [ngValue]="null">All P/L</option>
+          <option [ngValue]="'PROFIT'">Profit</option>
+          <option [ngValue]="'LOSS'">Loss</option>
+        </select>
+      </div>
+
+      <div class="filter-date-group">
+        <input type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" />
+        <span class="date-sep">—</span>
+        <input type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" />
+      </div>
+
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">
+        <i class="fa-light fa-xmark"></i> Clear
+      </button>
+    </div>
+
+    <ng-container *ngIf="loading">
+      <div class="metrics-grid">
+        <div class="metric-card sk-card" *ngFor="let i of [1,2,3,4]">
+          <div class="sk sk-label"></div>
+          <div class="sk sk-value"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="sk sk-label"></div></div>
+        <div class="sk-rows">
+          <div class="sk sk-row" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="trade-history-error" *ngIf="!loading && error">
+      <i class="fa-light fa-circle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+
+    <ng-container *ngIf="!loading && !error">
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total Trades</div>
+          <div class="metric-value">{{ total }}</div>
+          <div class="metric-desc">Matching your filters</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Page Net P/L</div>
+          <div class="metric-value" [ngClass]="amountClass(pageNetPnl)">
+            {{ signedFmt(pageNetPnl) }}
+          </div>
+          <div class="metric-desc">Net P/L on this page</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Page Gross P/L</div>
+          <div class="metric-value" [ngClass]="amountClass(pageGrossPnl)">
+            {{ signedFmt(pageGrossPnl) }}
+          </div>
+          <div class="metric-desc">Gross P/L on this page</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Page Breakdown</div>
+          <div class="metric-value metric-value--split">
+            <span class="val-positive">{{ pageProfitCount }} profit</span>
+            <span class="metric-split-sep">·</span>
+            <span class="val-negative">{{ pageLossCount }} loss</span>
+          </div>
+          <div class="metric-desc">Trades on current page</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <i class="fa-light fa-arrow-right-arrow-left"></i>
+            <span>Trade History</span>
+            <span class="count-badge">{{ total }}</span>
+          </div>
+        </div>
+
+        <div class="table-wrap trade-history-table-wrap">
+          <table class="trade-history-table" *ngIf="rows.length; else noRows">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th class="right">Qty</th>
+                <th class="right">Entry Price</th>
+                <th class="right">Exit Price</th>
+                <th class="right">Amount</th>
+                <th class="right">Gross P/L</th>
+                <th class="right">Net P/L</th>
+                <th>P/L Type</th>
+                <th class="right">Brokerage</th>
+                <th>Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of rows; trackBy: trackByRow">
+                <td><span class="sym">{{ r.symbol }}</span></td>
+                <td class="date-cell">{{ fmtDate(r.entry_date) }}</td>
+                <td class="date-cell">{{ fmtDate(r.exit_date) }}</td>
+                <td class="right">{{ fmt(r.quantity, 4) }}</td>
+                <td class="right">{{ fmt(r.entry_price) }}</td>
+                <td class="right">{{ fmt(r.exit_price) }}</td>
+                <td class="right">{{ brandFmt(r.amount) }}</td>
+                <td class="right amount-cell" [ngClass]="amountClass(r.gross_pnl)">{{ signedFmt(r.gross_pnl) }}</td>
+                <td class="right amount-cell" [ngClass]="amountClass(r.net_pnl)">{{ signedFmt(r.net_pnl) }}</td>
+                <td>
+                  <span class="pl-badge" [ngClass]="plTypeClass(r.profit_loss_type)">
+                    {{ r.profit_loss_type || '—' }}
+                  </span>
+                </td>
+                <td class="right">{{ brandFmt(r.brokerage_amount) }}</td>
+                <td><span class="owner-cell">{{ r.owner_username || '—' }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noRows>
+            <div class="no-data">
+              <i class="fa-light fa-inbox"></i>
+              <span>No trades found</span>
+              <span class="no-data-sub" *ngIf="hasFilters">Try clearing filters</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="pagination-bar" *ngIf="total > 0" [class.pagination-bar--one-page]="totalPages <= 1">
+          <div class="pagination-bar-left">
+            <label class="limit-lbl" for="th-limit">Per page</label>
+            <select id="th-limit" class="limit-select" [(ngModel)]="limit" (ngModelChange)="onLimitChange()">
+              <option [ngValue]="10">10</option>
+              <option [ngValue]="25">25</option>
+              <option [ngValue]="50">50</option>
+              <option [ngValue]="100">100</option>
+            </select>
+          </div>
+
+          <div class="pagination-bar-center">
+            <span class="pg-range" aria-live="polite">
+              <span class="pg-range-nums">
+                <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
+              </span>
+              <span class="pg-of">of</span>
+              <strong class="pg-total-count">{{ total }}</strong>
+              <span class="pg-total-label">trades</span>
+            </span>
+          </div>
+
+          <div class="pagination-bar-right">
+            <button
+              type="button"
+              class="pg-btn pg-nav"
+              [disabled]="currentPage <= 1"
+              (click)="prevPage()"
+              aria-label="Previous page">
+              <i class="fa-light fa-chevron-left"></i>
+              <span class="pg-nav-txt">Prev</span>
+            </button>
+
+            <div class="pg-numbers" *ngIf="totalPages > 1" role="navigation" aria-label="Pages">
+              <ng-container *ngFor="let item of pageNumbersForView()">
+                <span *ngIf="item === 'ellipsis'" class="pg-ellipsis" aria-hidden="true">…</span>
+                <button
+                  *ngIf="item !== 'ellipsis'"
+                  type="button"
+                  class="pg-num"
+                  [class.pg-num--active]="item === currentPage"
+                  [disabled]="item === currentPage"
+                  (click)="goToPage($any(item))">
+                  {{ item }}
+                </button>
+              </ng-container>
+            </div>
+
+            <span class="pg-mobile-page" *ngIf="totalPages > 1">Page {{ currentPage }} / {{ totalPages }}</span>
+
+            <button
+              type="button"
+              class="pg-btn pg-nav"
+              [disabled]="currentPage >= totalPages"
+              (click)="nextPage()"
+              aria-label="Next page">
+              <span class="pg-nav-txt">Next</span>
+              <i class="fa-light fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

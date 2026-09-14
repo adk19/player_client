@@ -1,0 +1,563 @@
+<div class="kyc-page">
+  <div class="kyc-shell">
+
+    @if (loading) {
+    <div class="kyc-body">
+      <div class="kyc-wizard-top kyc-wizard-top--skeleton">
+        <div class="sk sk-line sk-line--title"></div>
+        <div class="sk sk-line sk-line--steps"></div>
+      </div>
+      <div class="card sk-card sk-card--main"></div>
+    </div>
+    }
+
+    @if (!loading && pageMode === 'error') {
+    <div class="kyc-error">
+      <div class="err-icon"><span><i class="fa-light fa-circle-exclamation"></i></span></div>
+      <div class="err-body">
+        <div class="err-title">Could not load KYC</div>
+        <div class="err-msg">{{ error }}</div>
+        <button type="button" class="btn btn-primary" (click)="load()">
+          <span><i class="fa-light fa-rotate-right"></i></span> Retry
+        </button>
+      </div>
+    </div>
+    }
+
+    @if (!loading && pageMode === 'status') {
+    @if (kycStatusCode; as code) {
+    @let status = statusViews[code];
+    <section class="kyc-review" [class]="'kyc-review--' + status.tone" aria-labelledby="kyc-review-title">
+      <article class="kyc-review-card" [class]="'kyc-review-card--' + status.tone">
+        <p class="kyc-review-card__badge" aria-hidden="true">
+          @if (status.showPulse) {
+          <span class="kyc-review-card__badge-dot"></span>
+          }
+          {{ status.badge }}
+        </p>
+        <div class="kyc-review-card__icon" aria-hidden="true">
+          <span><i class="fa-light" [ngClass]="status.icon"></i></span>
+        </div>
+        <h2 id="kyc-review-title" class="kyc-review-card__title">{{ status.title }}</h2>
+        <p class="kyc-review-card__msg">{{ kycStatusMessage }}</p>
+        <p class="kyc-review-card__hint">{{ status.hint }}</p>
+        <button type="button" class="btn btn-secondary kyc-review-card__refresh" (click)="load()">
+          <span><i class="fa-light fa-rotate-right" aria-hidden="true"></i></span>
+          Check status again
+        </button>
+      </article>
+    </section>
+    } @else {
+    <div class="kyc-body">
+      <div class="card">
+        <div class="card-title">Verification status</div>
+        <p class="card-desc">{{ kycStatusMessage }}</p>
+        <button type="button" class="btn btn-primary" (click)="load()">Check status again</button>
+      </div>
+    </div>
+    }
+    }
+
+    <!-- Compact wizard chrome — title + steps inline, content first -->
+    @if (!loading && pageMode === 'wizard') {
+    <div class="kyc-body">
+      <div class="kyc-wizard-top">
+        <div class="kyc-wizard-top__head">
+          <div class="kyc-wizard-top__title-wrap">
+            <h1 class="kyc-wizard-title">Identity verification</h1>
+            @if (headlineLevel() !== '—') {
+            <span class="kyc-level-pill kyc-level-pill--inline">
+              {{ headlineLevel() }}
+            </span>
+            }
+          </div>
+          <button type="button" class="btn-refresh btn-refresh--compact" (click)="load()" title="Refresh status"
+            aria-label="Refresh status">
+            <span><i class="fa-light fa-rotate-right" aria-hidden="true"></i></span>
+          </button>
+        </div>
+
+        <nav class="kyc-steps kyc-steps--inline" *ngIf="hasCustomSteps() && !isCustomFlowComplete()"
+          aria-label="KYC level progress">
+          <ng-container *ngFor="let kl of kycLevelSteps; let idx = index; let last = last">
+            <div class="kyc-step" [class.kyc-step--active]="stepIsActive(idx)" [class.kyc-step--done]="stepIsDone(idx)">
+              <span class="kyc-step-badge" aria-hidden="true">
+                <span *ngIf="stepIsDone(idx)"><i class="fa-solid fa-check"></i></span>
+                <span *ngIf="!stepIsDone(idx)"><i class="fa-light" [ngClass]="stepIcon(kl.level)"></i></span>
+              </span>
+              <span class="kyc-step-label">{{ stepLabel(kl.level) }}</span>
+            </div>
+            <div *ngIf="!last" class="kyc-step-join" [class.kyc-step-join--done]="stepIsDone(idx)"></div>
+          </ng-container>
+        </nav>
+      </div>
+
+      @if (isCustomFlowComplete()) {
+      <div class="card card--done">
+        <div class="card-title-row">
+          <span class="card-title-icon" aria-hidden="true"><span><i class="fa-light fa-circle-check"></i></span></span>
+          <div class="card-title">Verification submitted</div>
+        </div>
+        @if (!customVerificationError) {
+        <p class="card-desc">
+          Your KYC request was sent successfully ({{ kycLevelSteps.length }} step
+          <span *ngIf="kycLevelSteps.length !== 1">s</span>).
+        </p>
+        }
+        @if (customVerificationError) {
+        <p class="kyc-inline-error">{{ customVerificationError }}</p>
+        }
+      </div>
+      }
+
+      <ng-container *ngIf="hasCustomSteps() && !isCustomFlowComplete() && currentKycLevel() as kl">
+
+        <!-- ID: country + documents in one card -->
+        <ng-container *ngIf="levelKind(kl.level) === 'id'">
+          <div class="card card--id-step">
+            <div class="kyc-id-substeps" aria-label="ID verification progress">
+              <span class="kyc-id-substep" [class.kyc-id-substep--active]="idSubstep === 'country'"
+                [class.kyc-id-substep--done]="idSubstep === 'doc'">
+                <span class="kyc-id-substep__num">1</span>
+                Country
+              </span>
+              <span class="kyc-id-substep-join" [class.kyc-id-substep-join--done]="idSubstep === 'doc'"></span>
+              <span class="kyc-id-substep" [class.kyc-id-substep--active]="idSubstep === 'doc'"
+                [class.kyc-id-substep--disabled]="selectedCountryId == null">
+                <span class="kyc-id-substep__num">2</span>
+                Document
+              </span>
+            </div>
+
+            @if (idSubstep === 'country') {
+            <div class="kyc-country-panel">
+              <p class="card-desc kyc-country-panel__desc">Select the country that matches your identity document.</p>
+
+              @if (countriesLoading) {
+              <div class="card-row-block card-row-block--tight">
+                <span class="muted">Loading countries…</span>
+              </div>
+              }
+
+              @if (!countriesLoading && customCountriesError) {
+              <div class="kyc-inline-error">
+                {{ customCountriesError }}
+                <button type="button" class="btn btn-ghost btn-sm" (click)="fetchCountries()">Retry</button>
+              </div>
+              }
+
+              @if (!countriesLoading && !customCountriesError && countries.length) {
+              <label class="kyc-country-search" for="kyc-country-search">
+                <span class="kyc-country-search__icon" aria-hidden="true">
+                  <span><i class="fa-light fa-magnifying-glass"></i></span>
+                </span>
+                <input id="kyc-country-search" class="kyc-country-search__input" type="search"
+                  placeholder="Search country or code…" [(ngModel)]="countrySearchQuery" autocomplete="off" />
+              </label>
+
+              @if (filteredCountries().length) {
+              <ul class="kyc-country-list" role="listbox" aria-label="Countries">
+                @for (country of filteredCountries(); track trackCountryById($index, country)) {
+                <li>
+                  <button type="button" class="kyc-country-item" role="option"
+                    [class.kyc-country-item--active]="selectedCountryId === country.id"
+                    [attr.aria-selected]="selectedCountryId === country.id" (click)="selectCountry(country)">
+                    <span class="kyc-country-item__name">{{ country.name }}</span>
+                    @if (country.code) {
+                    <span class="kyc-country-item__code">{{ country.code }}</span>
+                    }
+                    <span class="kyc-country-item__chevron" aria-hidden="true">
+                      <span><i class="fa-light fa-chevron-right"></i></span>
+                    </span>
+                  </button>
+                </li>
+                }
+              </ul>
+              } @else {
+              <p class="kyc-country-empty">No countries match “{{ countrySearchQuery }}”.</p>
+              }
+              }
+
+              <div class="card-actions card-actions--country" *ngIf="canGoBack()">
+                <button type="button" class="btn btn-secondary" (click)="goBack()">
+                  <span><i class="fa-light fa-arrow-left"></i></span> Back
+                </button>
+              </div>
+            </div>
+            }
+
+            @if (idSubstep === 'doc') {
+            <div class="kyc-doc-panel">
+              <div class="kyc-country-chip">
+                <span class="kyc-country-chip__icon" aria-hidden="true">
+                  <span><i class="fa-light fa-earth-americas"></i></span>
+                </span>
+                <div class="kyc-country-chip__text">
+                  <span class="kyc-country-chip__label">Country</span>
+                  <span class="kyc-country-chip__value">{{ selectedCountryLabel() }}</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm kyc-country-chip__change"
+                  (click)="changeCountry()">
+                  Change
+                </button>
+              </div>
+
+              <div class="kyc-doc-panel__head">
+                <span class="card-title-icon" aria-hidden="true"><span><i
+                      class="fa-light fa-file-lines"></i></span></span>
+                <div>
+                  <div class="card-title">Document type</div>
+                  <p class="card-desc card-desc--tight" *ngIf="docTypeListExpanded || selectedDocId == null">
+                    Choose a document type, then upload each required side.
+                  </p>
+                </div>
+              </div>
+
+              @if (docsLoading) {
+              <div class="card-row-block card-row-block--tight">
+                <span class="muted">Loading document types…</span>
+              </div>
+              }
+
+              @if (!docsLoading && customDocsError) {
+              <div class="kyc-inline-error">
+                {{ customDocsError }}
+                <button type="button" class="btn btn-ghost btn-sm" (click)="retryDocs()">Retry</button>
+              </div>
+              }
+
+              @if (docTypeListExpanded && !docsLoading && !customDocsError && docs.length) {
+              <div class="doc-type-grid" role="radiogroup" aria-label="Choose document type">
+                <button type="button" *ngFor="let d of docs; trackBy: trackDocById" class="doc-type-card" role="radio"
+                  [attr.aria-checked]="selectedDocId === d.id" [class.doc-type-card--active]="selectedDocId === d.id"
+                  (click)="selectDocument(d)">
+                  <span class="doc-type-card__top">
+                    <span class="doc-type-card__icon" aria-hidden="true">
+                      <span><i class="fa-light fa-id-card"></i></span>
+                    </span>
+                    <span class="doc-type-card__radio" aria-hidden="true"></span>
+                  </span>
+                  <span class="doc-type-card__title">{{ d.name }}</span>
+                  <span class="doc-type-card__sides">{{ fieldLabelsDisplay(d) }}</span>
+                  <span class="doc-type-card__files">
+                    {{ docFields(d).length }} file<span *ngIf="docFields(d).length !== 1">s</span> required
+                  </span>
+                  <span class="doc-type-card__desc" *ngIf="d.description">{{ d.description }}</span>
+                </button>
+              </div>
+              }
+
+              <div class="doc-select-summary" *ngIf="!docTypeListExpanded && selectedDoc() as sum">
+                <div class="doc-select-summary-text">
+                  <span class="doc-select-summary-label">Selected</span>
+                  <span class="doc-select-summary-name">{{ sum.name }}</span>
+                  <span class="doc-select-summary-sides">{{ fieldLabelsDisplay(sum) }}</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="changeDocType()">Change</button>
+              </div>
+
+              @if (docTypeListExpanded && !docsLoading && !customDocsError && docs.length && selectedDocId == null) {
+              <p class="doc-type-hint">Tap a document type below to continue.</p>
+              }
+
+              <ng-container *ngIf="selectedDoc() as sd">
+                <div class="upload-section upload-section--kyc">
+                  <div class="upload-section-head upload-section-head--kyc">
+                    <span class="upload-section-head__icon" aria-hidden="true">
+                      <span><i class="fa-light fa-cloud-arrow-up"></i></span>
+                    </span>
+                    <div class="upload-section-head__text">
+                      <div class="mini-label">Upload files</div>
+                      <p class="card-desc card-desc--tight">One file per side — {{ kycMediaFormatsLabel }} only.</p>
+                    </div>
+                  </div>
+
+                  <div class="upload-fields-grid">
+                    <div class="field-upload field-upload--panel" *ngFor="let field of docFields(sd)">
+                      <div class="field-upload-head">
+                        <span class="field-label field-label--inline">{{ formatFieldLabel(field) }}</span>
+                        <span class="field-status field-status--ok" *ngIf="getFileForSlot(sd.id, field)">Added</span>
+                        <span class="field-status field-status--pending"
+                          *ngIf="!getFileForSlot(sd.id, field)">Required</span>
+                      </div>
+                      <div class="file-input-row file-input-row--kyc">
+                        <label class="kyc-file-drop">
+                          <input type="file" class="kyc-file-input kyc-file-input--sr" [id]="fileInputId(sd.id, field)"
+                            [attr.aria-label]="formatFieldLabel(field) + ' - choose file'" [accept]="kycMediaAccept"
+                            (change)="onDocFileInput(sd.id, field, $event)" />
+                          <span><i class="fa-light fa-folder-open" aria-hidden="true"></i></span>
+                          <span class="kyc-file-drop__text">Choose file</span>
+                        </label>
+                        <button type="button" class="btn btn-ghost btn-sm btn-remove-file"
+                          *ngIf="getFileForSlot(sd.id, field)" (click)="clearDocField(sd.id, field)">
+                          <span><i class="fa-light fa-trash-can" aria-hidden="true"></i></span> Remove
+                        </button>
+                      </div>
+                      <p class="kyc-inline-error" *ngIf="getDocFieldError(sd.id, field) as docErr">{{ docErr }}</p>
+
+                      <div class="upload-preview upload-preview--kyc" *ngIf="getFileForSlot(sd.id, field) as file">
+                        <img *ngIf="isImageFile(file) && getPreviewUrlFor(sd.id, field) as src" [src]="src"
+                          class="preview-thumb preview-thumb--kyc" [alt]="formatFieldLabel(field)" />
+                        <div class="upload-preview-file" *ngIf="!isImageFile(file)">
+                          <span><i class="fa-light fa-file-pdf" aria-hidden="true"></i></span>
+                          <div>
+                            <div class="file-name">{{ file.name }}</div>
+                            <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                          </div>
+                        </div>
+                        <div class="upload-preview-meta" *ngIf="isImageFile(file)">
+                          <div class="file-name">{{ file.name }}</div>
+                          <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              @if (customVerificationError) {
+              <p class="kyc-inline-error">{{ customVerificationError }}</p>
+              }
+
+              <div class="card-actions">
+                <button type="button" class="btn btn-secondary" *ngIf="canGoBack()" (click)="goBack()">
+                  <span><i class="fa-light fa-arrow-left"></i></span> Back
+                </button>
+                <button type="button" class="btn btn-primary"
+                  [disabled]="!docUploadCompleteForSelected() || customVerificationLoading" (click)="continueStep()">
+                  {{ continueButtonLabel() }}
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+        </ng-container>
+
+        <!-- Selfie: MediaPipe FaceDetector + CDN tf (see index.html) -->
+        @if (levelKind(kl.level) === 'selfie') {
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title-icon" aria-hidden="true"><span><i class="fa-light fa-camera"></i></span></span>
+            <div class="card-title">Selfie verification</div>
+          </div>
+          @if (!selfiePreviewObjectUrl) {
+          <p class="card-desc">
+            Use your front camera and center your face in the frame. Capture is enabled once your face is detected.
+          </p>
+          }
+          @if (!selfieBlob) {
+          <app-kyc-selfie-capture (captured)="onSelfieCaptured($event)"></app-kyc-selfie-capture>
+          }
+
+          @if (selfiePreviewObjectUrl) {
+          <div class="selfie-done-panel">
+            <div class="selfie-done-panel__badge" aria-hidden="true">
+              <span><i class="fa-solid fa-check"></i></span>
+            </div>
+            <div class="selfie-done-panel__body">
+              <p class="selfie-done-panel__title">Selfie added</p>
+              <p class="selfie-done-panel__desc">Preview below matches what will be submitted. Retake if it is blurry or
+                cropped.</p>
+              <div class="selfie-done-panel__preview">
+                <div class="selfie-done-panel__frame">
+                  <img [src]="selfiePreviewObjectUrl" alt="Captured selfie" class="selfie-done-panel__img" />
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm selfie-done-panel__retake" (click)="retakeSelfie()">
+                Retake selfie
+              </button>
+            </div>
+          </div>
+          }
+
+          <div class="card-actions">
+            @if (canGoBack()) {
+            <button type="button" class="btn btn-secondary" (click)="goBack()">
+              <span><i class="fa-light fa-arrow-left"></i></span> Back
+            </button>
+            }
+            <button type="button" class="btn btn-primary" [disabled]="!selfieBlob || customVerificationLoading"
+              (click)="continueStep()">
+              {{ continueButtonLabel() }}
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- Email: OTP send + verify -->
+        @if (levelKind(kl.level) === 'email') {
+        <div class="kyc-email-step">
+          <article class="kyc-email-card" aria-labelledby="kyc-email-heading">
+            <header class="kyc-email-card__head">
+              <h2 id="kyc-email-heading" class="kyc-email-card__title">Confirm your email</h2>
+              <p class="kyc-email-card__sub">
+                We will send a one-time code to your inbox.
+                <span class="kyc-email-card__level">Level {{ kl.id }}</span>
+              </p>
+            </header>
+
+            <div class="kyc-email-card__body">
+              <form *ngIf="!emailOtpSent" class="kyc-email-form" [formGroup]="emailForm"
+                (ngSubmit)="submitEmailForOtp()">
+                <label class="kyc-email-label" for="kyc-email-input">Email</label>
+                <input id="kyc-email-input" class="kyc-email-input" type="email" formControlName="email"
+                  autocomplete="email" placeholder="you@example.com" maxlength="254" />
+                <p class="kyc-email-field-msg kyc-email-field-msg--err" *ngIf="emailFieldError() as ee">{{ ee }}</p>
+                <p class="kyc-email-field-msg kyc-email-field-msg--err" *ngIf="emailSendError">{{ emailSendError }}</p>
+                <button type="submit" class="btn btn-primary kyc-email-primary-btn" [disabled]="emailSendLoading">
+                  {{ emailSendLoading ? 'Sending…' : 'Send code' }}
+                </button>
+              </form>
+
+              <div *ngIf="emailOtpSent && !emailVerified" class="kyc-email-otp-flow">
+                <div class="kyc-email-otp-sent">
+                  <span class="kyc-email-otp-sent__dot" aria-hidden="true"></span>
+                  <p class="kyc-email-otp-sent__line">
+                    Code sent to <strong>{{ emailForm.controls.email.value }}</strong>
+                  </p>
+                  <button type="button" class="kyc-email-link" (click)="changeEmailForOtp()">Change email</button>
+                </div>
+
+                <form class="kyc-email-form" [formGroup]="otpForm" (ngSubmit)="verifyEmailOtp()">
+                  <label class="kyc-email-label" for="kyc-otp-input">Verification code</label>
+                  <input id="kyc-otp-input" class="kyc-email-input kyc-email-input--otp" type="text"
+                    formControlName="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="000000"
+                    maxlength="10" />
+                  <p class="kyc-email-field-msg kyc-email-field-msg--err" *ngIf="otpFieldError() as oe">{{ oe }}</p>
+                  <p class="kyc-email-field-msg kyc-email-field-msg--err" *ngIf="emailVerifyError">{{ emailVerifyError
+                    }}</p>
+                  <button type="submit" class="btn btn-primary kyc-email-primary-btn " [disabled]="emailVerifyLoading">
+                    {{ emailVerifyLoading ? 'Verifying…' : 'Verify' }}
+                  </button>
+                </form>
+              </div>
+
+              <div *ngIf="emailVerified" class="kyc-email-success">
+                <div class="kyc-email-success__icon" aria-hidden="true">
+                  <span><i class="fa-solid fa-check"></i></span>
+                </div>
+                <p class="kyc-email-success__title">Email verified</p>
+                <p class="kyc-email-success__desc">You can continue to the next step.</p>
+              </div>
+            </div>
+
+            <footer class="kyc-step-footer kyc-email-card__footer" *ngIf="canGoBack() || emailVerified">
+              <button type="button" class="btn btn-secondary" *ngIf="canGoBack()" (click)="goBack()">
+                <span><i class="fa-light fa-arrow-left"></i></span> Back
+              </button>
+              <button type="button" class="btn btn-primary kyc-email-continue" *ngIf="emailVerified"
+                (click)="continueStep()">
+                {{ continueButtonLabel() }}
+              </button>
+            </footer>
+          </article>
+        </div>
+        }
+
+        @if (levelKind(kl.level) === 'location') {
+        <div class="kyc-location-step">
+          <article class="kyc-location-card">
+            <header class="kyc-location-card__head">
+              <h2 class="kyc-location-card__title">Your location</h2>
+              <p class="kyc-location-card__sub">
+                Enter your address and upload a supporting document.
+                <span class="kyc-location-card__level">Level {{ kl.id }}</span>
+              </p>
+            </header>
+            <div class="kyc-location-card__body">
+              <form class="kyc-location-form" [formGroup]="locationForm" (ngSubmit)="continueStep()">
+                <div class="field-block">
+                  <label class="field-label" for="kyc-location-address">Address</label>
+                  <textarea id="kyc-location-address" class="kyc-location-textarea" formControlName="address" rows="3"
+                    placeholder="Street, building, postal code" maxlength="500"></textarea>
+                  <p class="kyc-location-field-msg" *ngIf="locationFieldError('address') as ae">{{ ae }}</p>
+                </div>
+                <div class="kyc-location-row">
+                  <div class="field-block kyc-location-row__item">
+                    <label class="field-label" for="kyc-location-city">City</label>
+                    <input id="kyc-location-city" class="kyc-location-input" type="text" formControlName="city"
+                      autocomplete="address-level2" placeholder="City" maxlength="120" />
+                    <p class="kyc-location-field-msg" *ngIf="locationFieldError('city') as ce">{{ ce }}</p>
+                  </div>
+                  <div class="field-block kyc-location-row__item">
+                    <label class="field-label" for="kyc-location-state">State</label>
+                    <input id="kyc-location-state" class="kyc-location-input" type="text" formControlName="state"
+                      autocomplete="address-level1" placeholder="State / region" maxlength="120" />
+                    <p class="kyc-location-field-msg" *ngIf="locationFieldError('state') as se">{{ se }}</p>
+                  </div>
+                </div>
+                <div class="field-upload kyc-location-doc">
+                  <div class="field-upload-head">
+                    <label class="field-label field-label--inline" for="kyc-location-doc-input">Location
+                      document</label>
+                    <span class="field-status field-status--ok" *ngIf="locationDoc">Added</span>
+                    <span class="field-status field-status--pending" *ngIf="!locationDoc">Required</span>
+                  </div>
+                  <p class="kyc-location-doc-hint">{{ kycMediaFormatsLabel }} only (proof of address).</p>
+                  <div class="file-input-row">
+                    <input type="file" id="kyc-location-doc-input" class="kyc-file-input" [accept]="kycMediaAccept"
+                      (change)="onLocationDocInput($event)" />
+                    <button type="button" class="btn btn-ghost btn-sm" *ngIf="locationDoc"
+                      (click)="clearLocationDoc()">Remove</button>
+                  </div>
+                  <p class="kyc-location-field-msg kyc-location-field-msg--err" *ngIf="locationDocError">{{
+                    locationDocError }}</p>
+                  <div class="upload-preview upload-preview--compact" *ngIf="locationDoc as locFile">
+                    <img *ngIf="isImageFile(locFile) && locationDocPreviewUrl as src" [src]="src"
+                      class="preview-thumb preview-thumb--compact" alt="Location document" />
+                    <div class="upload-preview-file" *ngIf="!isImageFile(locFile)">
+                      <span><i class="fa-light fa-file-pdf" aria-hidden="true"></i></span>
+                      <div>
+                        <div class="file-name">{{ locFile.name }}</div>
+                        <div class="file-size">{{ formatFileSize(locFile.size) }}</div>
+                      </div>
+                    </div>
+                    <div class="upload-preview-meta" *ngIf="isImageFile(locFile)">
+                      <div class="file-name">{{ locFile.name }}</div>
+                      <div class="file-size">{{ formatFileSize(locFile.size) }}</div>
+                    </div>
+                  </div>
+                </div>
+                @if (locationSubmitError) {
+                <p class="kyc-location-field-msg kyc-location-field-msg--err">
+                  {{ locationSubmitError }}</p>
+                }
+                <div class="card-actions kyc-location-actions">
+                  @if (canGoBack()) {
+                  <button type="button" class="btn btn-secondary" (click)="goBack()">
+                    <span><i class="fa-light fa-arrow-left"></i></span> Back
+                  </button>
+                  }
+                  <button type="submit" class="btn btn-primary kyc-location-submit"
+                    [disabled]="customVerificationLoading">
+                    {{ continueButtonLabel() }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </article>
+        </div>
+        }
+
+        <!-- Other level types -->
+        @if (levelKind(kl.level) === 'other') {
+        <div class="card">
+          <div class="card-title">{{ stepLabel(kl.level) }}</div>
+          <p class="card-desc">
+            This verification type is not mapped to a built-in flow yet (level id <strong>{{ kl.id }}</strong>). You can
+            extend the component for this level or continue after completing it elsewhere.
+          </p>
+          <div class="card-actions">
+            <button type="button" class="btn btn-secondary" *ngIf="canGoBack()" (click)="goBack()">
+              <span><i class="fa-light fa-arrow-left"></i></span> Back
+            </button>
+            <button type="button" class="btn btn-primary" (click)="continueStep()">Continue</button>
+          </div>
+        </div>
+        }
+      </ng-container>
+    </div>
+    }
+
+  </div>
+</div>

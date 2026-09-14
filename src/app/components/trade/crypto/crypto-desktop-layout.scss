@@ -1,0 +1,399 @@
+/* Desktop trade workspace (>992px) — 5 columns, 1 row, resizable panels */
+
+$trade-desktop-bp: 993px;
+$trade-outer-pad: 10px;
+$trade-resizer-w: 10px;
+$trade-panel-radius: 10px;
+
+@media (min-width: $trade-desktop-bp) {
+  :host {
+    display: block;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .main-trade--desktop {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: $trade-outer-pad;
+    gap: 0;
+    background: var(--trade-white, var(--layout-bg));
+  }
+
+  .main-trade-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* Exactly 5 columns × 1 row — no wrap, no extra rows */
+  .main-trade-top {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: grid !important;
+    flex-direction: unset !important;
+    align-items: stretch !important;
+    align-content: stretch !important;
+    justify-content: stretch !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-auto-rows: minmax(0, 1fr);
+    grid-auto-flow: row;
+    grid-auto-columns: 0;
+    gap: 0;
+    overflow: hidden;
+    width: 100%;
+    isolation: isolate;
+  }
+
+  .main-trade-top > .main-trade-left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .main-trade-top > .trade-resizer--between-left {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .main-trade-top > .main-trade-chart {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .main-trade-top > .trade-resizer--between-right {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .main-trade-top > .main-trade-right {
+    grid-column: 5;
+    grid-row: 1;
+  }
+
+  .main-trade-panel {
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 0;
+  }
+
+  .main-trade-left {
+    width: 100%;
+    min-width: 380px;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+
+    app-watchlist {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    ::ng-deep .watchlist-container {
+      height: 100%;
+      min-height: 0;
+      border-radius: $trade-panel-radius;
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+      background: var(--layout-bg);
+    }
+  }
+
+  .main-trade-chart {
+    width: 100% !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+
+    .trade-empty-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+    }
+
+    app-crypto-chart-view {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    ::ng-deep app-crypto-chart-view {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+
+      .tv-chart-wrapper {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        border-radius: $trade-panel-radius;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        background: var(--layout-bg);
+      }
+
+      .chart-top-main {
+        flex: 0 0 auto;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+      }
+
+      .chart-topbar {
+        height: auto;
+        min-height: 52px;
+        max-height: 64px;
+        padding: 4px 10px !important;
+      }
+
+      .chart-info-main:not(.tv-mode) {
+        flex: 1 1 auto;
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden;
+
+        > .info-bar-inner,
+        > .info-bar-second {
+          display: none !important;
+        }
+
+        .chart-wrap {
+          flex: 1 1 auto;
+          min-height: 0 !important;
+          height: 100% !important;
+          max-height: 100% !important;
+          margin: 0 !important;
+        }
+
+        .chart-container {
+          margin: 0 !important;
+          min-height: 0 !important;
+          height: 100% !important;
+        }
+      }
+
+      .chart-info-main.tv-mode {
+        flex: 1 1 auto;
+        min-height: 0 !important;
+        height: 100% !important;
+        padding: 0 !important;
+      }
+    }
+  }
+
+  .main-trade-right {
+    width: 100% !important;
+    min-width: 380px;
+    height: 100%;
+    min-height: 0;
+    border: none !important;
+    background: transparent !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .main-trade-right-main-ctx {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: $trade-panel-radius !important;
+    border: 1px solid var(--border-light) !important;
+    background: var(--layout-bg);
+  }
+
+  .main-trade-slip-main {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .main-trade-slip-main .trade-slip.ts-mt5-panel {
+    margin: 0;
+    padding: 0;
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-trade-slip-main .ts-header,
+  .main-trade-slip-main .ts-order-type-row {
+    flex: 0 0 auto;
+  }
+
+  .main-trade-slip-main .market-trade-form-main,
+  .main-trade-slip-main .pending-order-form {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-trade-slip-main .market-trade-form-main .ts-trade-guide {
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+
+  .main-trade-slip-main .prices-main {
+    flex-shrink: 0;
+  }
+
+  .main-trade-positions {
+    flex: 0 0 var(--trade-pos-h, 220px);
+    height: var(--trade-pos-h, 220px);
+    min-height: 0;
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column;
+    border: none !important;
+    background: transparent !important;
+    padding: 0;
+    margin: 0;
+    position: relative;
+
+    app-positions {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+  }
+
+  /* Column 2 & 4 — resizer gutters between panels */
+  .trade-resizer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    touch-action: none;
+    user-select: none;
+    background: transparent;
+
+    .trade-resizer__line {
+      display: block;
+      border-radius: 999px;
+      background: color-mix(
+        in srgb,
+        var(--border-light) 80%,
+        var(--primary) 20%
+      );
+      opacity: 0.3;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+    }
+
+    &:hover .trade-resizer__line,
+    &.trade-resizer--dragging .trade-resizer__line {
+      background: var(--primary);
+      opacity: 1;
+      // box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    &.trade-resizer--dragging {
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+  }
+
+  .trade-resizer--col {
+    cursor: col-resize;
+
+    .trade-resizer__line {
+      width: 3px;
+      height: 56px;
+    }
+
+    &:hover .trade-resizer__line,
+    &.trade-resizer--dragging .trade-resizer__line {
+      width: 4px;
+      height: 68px;
+    }
+  }
+
+  .trade-resizer--row {
+    flex: 0 0 $trade-resizer-w;
+    min-height: $trade-resizer-w;
+    height: $trade-resizer-w;
+    cursor: row-resize;
+    margin: 0;
+
+    .trade-resizer__line {
+      width: 56px;
+      height: 3px;
+    }
+  }
+
+  .trade-sticky-btn-wrap,
+  .trade-sticky-currency-warn,
+  .trade-offcanvas-backdrop {
+    display: none !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .main-trade-shell {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .trade-resizer {
+    display: none !important;
+  }
+}

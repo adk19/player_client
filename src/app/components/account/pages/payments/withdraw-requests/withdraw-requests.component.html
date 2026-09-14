@@ -1,0 +1,272 @@
+<div class="dr-page dr-page--embedded">
+
+  <div class="dr-shell">
+
+    <div class="dr-toolbar">
+
+      <div class="dr-filters">
+
+        <!-- <label class="dr-label" for="withdrawStatusFilter">Status</label> -->
+
+        <select id="withdrawStatusFilter" class="dr-select" [(ngModel)]="statusId" name="statusId"
+          (ngModelChange)="onStatusChange()">
+          <option [ngValue]="null">All statuses</option>
+          <option [ngValue]="1">Pending</option>
+          <option [ngValue]="2">Approved</option>
+          <option [ngValue]="3">Rejected</option>
+          <option [ngValue]="4">Cancelled</option>
+        </select>
+
+        <input class="dr-search" type="search" [(ngModel)]="search" name="withdrawSearch" placeholder="Search requests"
+          (keyup.enter)="onSearch()" />
+
+        <button type="button" class="dr-btn dr-btn--outline" (click)="onSearch()">Search</button>
+
+      </div>
+
+      <button type="button" class="dr-btn dr-btn--icon" (click)="refresh()" [disabled]="loading"
+        aria-label="Refresh withdrawal requests">
+
+        <i class="fa-light fa-rotate-right" [class.fa-spin]="loading"></i>
+
+      </button>
+
+    </div>
+
+    @if (loading && !requests.length) {
+
+    <p class="dr-loading"><i class="fa-light fa-spinner fa-spin"></i> Loading withdrawal requests…</p>
+
+    } @else if (error) {
+
+    <div class="dr-error">
+
+      <i class="fa-light fa-circle-exclamation"></i>
+
+      <span>{{ error }}</span>
+
+      <button type="button" class="dr-btn" (click)="refresh()">Retry</button>
+
+    </div>
+
+    } @else if (!requests.length) {
+
+    <div class="dr-empty">
+
+      <i class="fa-light fa-inbox"></i>
+
+      <p>No withdrawal requests found.</p>
+
+      <button type="button" class="dr-btn" (click)="onMakeWithdraw()">Make a withdrawal</button>
+
+    </div>
+
+    } @else {
+
+    <div class="dr-list">
+
+      @for (request of requests; track request.requestId) {
+
+      <article class="dr-card" [class.dr-card--open]="expandedRequestId === request.requestId">
+
+        <button type="button" class="dr-card__summary" (click)="toggleDetails(request.requestId)">
+
+          <div class="dr-card__main">
+
+            <span class="dr-card__id">#{{ request.requestId }}</span>
+
+            <strong>{{ request.paymentMethodName || request.paymentMethodCode || 'Withdrawal' }}</strong>
+
+            <span class="dr-card__amount">{{ request.amount | number:'1.2-2' }} {{ request.currencyCode }}</span>
+
+          </div>
+
+          <div class="dr-card__meta">
+
+            <span class="dr-status" [ngClass]="statusClass(request)">{{ request.statusName }}</span>
+
+            @if (isPendingRequest(request)) {
+
+            <button type="button" class="dr-cancel-quick" (click)="startCancel(request, $event)"
+              [disabled]="cancellingRequestId === request.requestId" aria-label="Cancel request">
+
+              @if (cancellingRequestId === request.requestId) {
+
+              <i class="fa-light fa-spinner fa-spin"></i>
+
+              } @else {
+
+              Cancel
+
+              }
+
+            </button>
+
+            }
+
+            <span class="dr-card__date">{{ formatDate(request.requestedAt) }}</span>
+
+            <i class="fa-light fa-chevron-down dr-card__chevron"></i>
+
+          </div>
+
+        </button>
+
+
+
+        @if (expandedRequestId === request.requestId) {
+
+        <div class="dr-card__details">
+
+          <div class="dr-detail-row">
+
+            <span>Payment method</span>
+
+            <strong>{{ request.paymentMethodName }} ({{ request.paymentMethodCode }})</strong>
+
+          </div>
+
+          @for (row of detailRows(request); track row.label) {
+
+          <div class="dr-detail-row">
+
+            <span>{{ row.label }}</span>
+
+            <div>
+
+              <span class="dr-mono">{{ row.value }}</span>
+
+              <button type="button" (click)="copyText(row.value)"><i class="fa-light fa-copy"></i></button>
+
+            </div>
+
+          </div>
+
+          }
+
+          <div class="dr-detail-row">
+
+            <span>Requested at</span>
+
+            <strong>{{ formatDate(request.requestedAt) }}</strong>
+
+          </div>
+
+          <div class="dr-detail-row">
+
+            <span>Processed at</span>
+
+            <strong>{{ formatDate(request.processedAt) }}</strong>
+
+          </div>
+
+          @if (request.playerNote) {
+
+          <div class="dr-detail-row">
+
+            <span>Your note</span>
+
+            <strong>{{ request.playerNote }}</strong>
+
+          </div>
+
+          }
+
+          @if (request.adminNote) {
+
+          <div class="dr-detail-row">
+
+            <span>Admin note</span>
+
+            <strong>{{ request.adminNote }}</strong>
+
+          </div>
+          }
+          
+          @if (mediaUrl(request.proofUrl); as proof) {
+          <div class="dr-proof">
+            <div class="dr-proof__head">
+              <span>Approval proof</span>
+              <a class="dr-proof__open" [href]="proof" target="_blank" rel="noopener noreferrer">
+                Open full size <i class="fa-light fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+            @if (isProofPdf(proof)) {
+            <a class="dr-proof__file" [href]="proof" target="_blank" rel="noopener noreferrer">
+              <i class="fa-light fa-file-pdf"></i>
+              <span>View PDF proof</span>
+            </a>
+            } @else {
+            <a class="dr-proof__frame" [href]="proof" target="_blank" rel="noopener noreferrer"
+              aria-label="Open approval proof full size">
+              <img [src]="proof" alt="Approval proof for request #{{ request.requestId }}" loading="lazy" />
+            </a>
+            }
+          </div>
+          }
+
+          @if (isPendingRequest(request)) {
+
+          <div class="dr-card__actions" (click)="$event.stopPropagation()">
+
+            @if (cancelConfirmRequestId === request.requestId) {
+
+            <p class="dr-cancel-prompt">Cancel this pending withdrawal request? This cannot be undone.</p>
+
+            <div class="dr-cancel-actions">
+
+              <button type="button" class="dr-btn dr-btn--outline" (click)="dismissCancel($event)"
+                [disabled]="cancellingRequestId === request.requestId">Keep request</button>
+
+              <button type="button" class="dr-btn dr-btn--danger" (click)="confirmCancel(request, $event)"
+                [disabled]="cancellingRequestId === request.requestId">
+
+                @if (cancellingRequestId === request.requestId) {
+
+                <i class="fa-light fa-spinner fa-spin"></i> Cancelling…
+
+                } @else {
+
+                Yes, cancel request
+
+                }
+
+              </button>
+
+            </div>
+
+            } @else {
+
+            <button type="button" class="dr-btn dr-btn--danger-outline" (click)="startCancel(request, $event)"
+              [disabled]="cancellingRequestId != null">
+
+              Cancel request
+
+            </button>
+
+            }
+
+          </div>
+          }
+        </div>
+        }
+      </article>
+
+      }
+
+    </div>
+
+    @if (totalPages > 1) {
+    <div class="dr-pager">
+      <button type="button" class="dr-btn dr-btn--outline" (click)="prevPage()" [disabled]="page <= 1">Previous</button>
+
+      <span>Page {{ page }} of {{ totalPages }} · {{ total }} total</span>
+
+      <button type="button" class="dr-btn dr-btn--outline" (click)="nextPage()"
+        [disabled]="page >= totalPages">Next</button>
+
+    </div>
+    }
+    }
+  </div>
+</div>

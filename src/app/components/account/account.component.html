@@ -1,0 +1,74 @@
+<div class="acc-shell">
+
+  <!-- ── Sidebar / Menu ── -->
+  <aside class="acc-menu-page" [class.hidden]="isChildActive">
+
+    <div class="acc-rail-head">
+      <div class="acc-user-header">
+        <div class="acc-avatar" aria-hidden="true">
+          <span class="acc-avatar-letter">{{ (userName || 'P').charAt(0) | uppercase }}</span>
+        </div>
+        <div class="acc-user-info">
+          <div class="acc-welcome">Player account</div>
+          <div class="acc-username" [title]="userName">{{ userName || '—' }}</div>
+        </div>
+      </div>
+
+      <div class="acc-balance-card">
+        <div class="acc-balance-label">Available balance</div>
+        <div class="acc-balance-value">{{ formatBalance(balance) }}</div>
+      </div>
+    </div>
+
+    <nav class="acc-menu-list" aria-label="Account navigation">
+      @for (group of menuGroups; track group.label) {
+      <div class="acc-menu-group">
+        <div class="acc-group-label">{{ group.label }}</div>
+        @for (item of group.items; track item.url) {
+        <a class="acc-menu-item"
+          [routerLink]="item.url"
+          [queryParams]="item.queryParams"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="onMenuClick()">
+          <div class="acc-item-left">
+            <div class="acc-item-icon">
+              <i [class]="'fa-light fa-' + item.icon"></i>
+            </div>
+            <span class="acc-item-label">{{ item.name }}</span>
+          </div>
+          <div class="acc-item-right">
+            @if (item.badge) {
+            <span class="acc-badge">{{ item.badge }}</span>
+            }
+            <i class="fa-light fa-chevron-right acc-chevron"></i>
+          </div>
+        </a>
+        }
+      </div>
+      }
+    </nav>
+
+    <div class="acc-logout-wrap">
+      <button type="button" class="acc-logout-dark" (click)="logout()">
+        <i class="fa-light fa-right-from-bracket"></i>
+        Logout
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Child route content ── -->
+  <div class="acc-child-page" [class.active]="isChildActive">
+    <div class="acc-child-topbar" *ngIf="isChildActive">
+      <button type="button" class="acc-back-btn" (click)="goBack()" aria-label="Back">
+        <i class="fa-light fa-arrow-left"></i>
+      </button>
+      <span class="acc-child-title">{{ activeTitle }}</span>
+    </div>
+    <div class="acc-child-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+</div>

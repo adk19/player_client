@@ -1,0 +1,360 @@
+<div class="dep-page">
+  <div class="dep">
+    <!-- <nav class="dep-crumb">
+      <a routerLink="/home">Home</a>
+      <span>›</span>
+      <span>Deposit</span>
+    </nav> -->
+
+    <header class="dep-head mt-2">
+      @if (depositTab === 'deposit' && depositStep === 'amount') {
+      <button type="button" class="dep-head__back" (click)="backToMethods()" aria-label="Back">
+        <i class="fa-light fa-arrow-left"></i>
+      </button>
+      }
+      <div class="dep-head__content">
+        <h1>Deposit</h1>
+        <p>{{ depositTab === 'requests' ? 'Track your submitted deposit requests' : depositStep === 'methods' ? 'Choose
+          a payment method to fund your account' : selectedMethod().label }}</p>
+      </div>
+    </header>
+
+    <div class="dep-tabs">
+      <button type="button" class="dep-tabs__btn" [class.active]="depositTab === 'deposit'"
+        (click)="showDepositTab('deposit')">New deposit</button>
+      <button type="button" class="dep-tabs__btn" [class.active]="depositTab === 'requests'"
+        (click)="showDepositTab('requests')">My requests</button>
+    </div>
+
+    @if (depositTab === 'requests') {
+    <app-deposit-requests (makeDepositClick)="showDepositTab('deposit')" />
+    }
+
+    @if (depositTab === 'deposit') {
+    @if (configError) {
+    <p class="dep-error-banner">{{ configError }}</p>
+    }
+
+    @if (depositStep === 'methods') {
+    <h2 class="dep-section-title">All payment methods</h2>
+
+    @if (configLoading) {
+    <p class="dep-loading"><i class="fa-light fa-spinner fa-spin"></i> Loading…</p>
+    } @else if (!paymentMethods.length) {
+    <p class="dep-empty">No payment methods available.</p>
+    } @else {
+    <div class="dep-grid">
+      @for (method of paymentMethods; track method.id) {
+      <button type="button" class="dep-card" (click)="selectDepositMethod(method)">
+        <img [src]="method.iconUrl" alt="" width="40" height="40" />
+        <h3>{{ method.label }}</h3>
+        <p><span>Processing time</span> {{ method.processingTime }}</p>
+        <p><span>Fee</span> {{ methodFee(method) }}</p>
+      </button>
+      }
+    </div>
+    }
+    }
+
+    @if (depositStep === 'amount') {
+    <form class="dep-split" [class.dep-split--side]="showDepositSidePanel()" (ngSubmit)="submitDeposit()" novalidate>
+      <div class="dep-split__left">
+        <label class="dep-label">Payment method</label>
+        <button type="button" class="dep-select" (click)="backToMethods()">
+          <span>
+            <img [src]="selectedMethod().iconUrl" alt="" width="22" height="22" /> {{ selectedMethod().label}}</span>
+          <i class="fa-light fa-chevron-down"></i>
+        </button>
+
+        <label class="dep-label">Wallet balance</label>
+        <div class="dep-select dep-select--static">
+          <span><span class="dep-tag">wallet</span> Main Wallet</span>
+          @if (walletLoading) {
+          <strong class="dep-wallet-loading">
+            <i class="fa-light fa-spinner fa-spin"></i></strong>
+          } @else {
+          <strong>{{ walletBalance() }}</strong>
+          }
+        </div>
+
+        <div class="dep-amount-box" [class.error]="!!amountError()">
+          <span>Wallet credit</span>
+          <div class="dep-amount-row">
+            <input type="text" class="dep-amount-input" [value]="amount" name="amount" placeholder="0"
+              inputmode="decimal" autocomplete="off" [attr.maxlength]="depositAmountMaxLength()"
+              (input)="onDepositAmountInput($event)" (keydown)="onDepositAmountKeyDown($event)" />
+            <em>{{ currency() }}</em>
+          </div>
+        </div>
+
+        @if (showConversionPanel()) {
+        <div class="dep-convert" [class.dep-convert--loading]="conversionLoading">
+          @if (conversionLoading) {
+          <p>
+            <i class="fa-light fa-spinner fa-spin"></i> Calculating conversion…
+          </p>
+          } @else if (conversionError) {
+          <p class="dep-field-error dep-field-error--compact">{{ conversionError }}</p>
+          } @else if (cashConversion) {
+          <div class="dep-convert__row">
+            <span>You pay</span>
+            <strong>{{ formatPaymentAmount() }}</strong>
+          </div>
+          @if (cashConversion.rate_label) {
+          <p class="dep-convert__rate">{{ cashConversion.rate_label }}</p>
+          }
+          @if (cashConversion.summary) {
+          <p class="dep-convert__summary">{{ cashConversion.summary }}</p>
+          }
+          }
+        </div>
+        }
+
+        <div class="dep-quick">
+          @for (preset of quickAmounts(); track preset) {
+          <button type="button" (click)="setDepositAmount(preset)">{{ preset | number }} {{ currency() }}</button>
+          }
+        </div>
+        @if (amountError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        } @else {
+        <p class="dep-hint">{{ depositAmountRangeLabel() }}</p>
+        }
+
+        @if (requiresUtr()) {
+        <label class="dep-label">UTR / reference number</label>
+        <input class="dep-input" type="text" [(ngModel)]="depositUtr" name="depositUtr" placeholder="UTR987654221000"
+          maxlength="120" autocomplete="off" />
+        @if (depositUtrError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        }
+        }
+
+        @if (requiresCryptoProof()) {
+        <div class="dep-field-row" [class.dep-field-row--single]="!depositNetwork()">
+          <div class="dep-field-col">
+            <label class="dep-label">Coin</label>
+            <div class="dep-select dep-select--static">
+              <span>{{ depositCoin() }}</span>
+            </div>
+          </div>
+
+          @if (depositNetwork()) {
+          <div class="dep-field-col">
+            <label class="dep-label">Network</label>
+            <div class="dep-select dep-select--static">
+              <span>{{ depositNetwork() }}</span>
+            </div>
+          </div>
+          }
+        </div>
+
+        <label class="dep-label">Transaction hash</label>
+        <input class="dep-input" type="text" [(ngModel)]="depositTxHash" name="depositTxHash"
+          placeholder="0x… or blockchain tx id" maxlength="200" autocomplete="off" />
+        @if (depositTxHashError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        }
+
+        <label class="dep-label">Sender wallet address</label>
+        <input class="dep-input" type="text" [(ngModel)]="depositSenderWallet" name="depositSenderWallet"
+          placeholder="Your sending wallet address" maxlength="200" autocomplete="off" />
+        @if (depositSenderWalletError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        }
+        }
+
+        <label class="dep-label">Note <span class="dep-optional">(optional)</span></label>
+        <textarea class="dep-input dep-input--textarea" [(ngModel)]="depositPlayerNote" name="depositPlayerNote"
+          placeholder="Add a note for the finance team" maxlength="500" rows="2"></textarea>
+        @if (depositPlayerNoteError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        }
+
+        <label class="dep-label">
+          {{ depositFileLabel() }}
+          @if (!requiresCryptoProof()) {
+          <span class="dep-optional">(recommended)</span>
+          }
+        </label>
+        <div class="dep-upload" [class.dep-upload--error]="!!depositFileError()"
+          [class.dep-upload--dragging]="isDepositFileDragging">
+          @if (depositFile; as proofFile) {
+          <div class="dep-upload__preview">
+            @if (depositFilePreviewUrl; as previewUrl) {
+            <button type="button" class="dep-upload__thumb-btn" (click)="openDepositProofViewer()"
+              aria-label="View deposit proof">
+              <img class="dep-upload__thumb" [src]="previewUrl" alt="Deposit proof preview" />
+              <span class="dep-upload__thumb-overlay" aria-hidden="true">
+                <i class="fa-light fa-magnifying-glass-plus"></i>
+              </span>
+            </button>
+            } @else if (isDepositFilePdf()) {
+            <button type="button" class="dep-upload__thumb-btn dep-upload__thumb-btn--file"
+              (click)="openDepositProofViewer()" aria-label="View deposit proof PDF">
+              <span class="dep-upload__icon dep-upload__icon--file"><i class="fa-light fa-file-pdf"></i></span>
+              <span class="dep-upload__thumb-overlay" aria-hidden="true">
+                <i class="fa-light fa-arrow-up-right-from-square"></i>
+              </span>
+            </button>
+            } @else {
+            <span class="dep-upload__icon dep-upload__icon--file"><i class="fa-light fa-file-pdf"></i></span>
+            }
+            <div class="dep-upload__meta">
+              <strong>{{ depositFileName }}</strong>
+              <span>{{ formatDepositFileSize(proofFile.size) }}</span>
+            </div>
+            <div class="dep-upload__actions">
+              <label class="dep-upload__replace">
+                <input #proofReplaceInput type="file" [accept]="depositProofAccept" name="depositProofReplace"
+                  (change)="onDepositFileChange($event)" />
+                <i class="fa-light fa-arrows-rotate"></i> Replace
+              </label>
+              <button type="button" class="dep-upload__remove" (click)="clearDepositFile(proofReplaceInput)">
+                <i class="fa-light fa-trash-can"></i> Remove
+              </button>
+            </div>
+          </div>
+          } @else {
+          <label class="dep-upload__drop" (dragover)="onDepositFileDragOver($event)"
+            (dragleave)="onDepositFileDragLeave($event)" (drop)="onDepositFileDrop($event)">
+            <input #proofInput type="file" [accept]="depositProofAccept" name="depositProof"
+              (change)="onDepositFileChange($event)" />
+            <span class="dep-upload__icon"><i class="fa-light fa-cloud-arrow-up"></i></span>
+            <span class="dep-upload__title">{{ depositFileLabel() }}</span>
+            <span class="dep-upload__hint">Drag & drop or click to browse · {{ depositFileHint() }}</span>
+          </label>
+          }
+        </div>
+        @if (depositFileError(); as err) {
+        <p class="dep-field-error">{{ err }}</p>
+        }
+
+        @if (confirmDepositFormError(); as formErr) {
+        <p class="dep-field-error">{{ formErr }}</p>
+        }
+
+        @if (depositSubmitError) {
+        <p class="dep-field-error">{{ depositSubmitError }}</p>
+        }
+
+        <button type="submit" class="dep-cta" [disabled]="depositSubmitting">
+          @if (depositSubmitting) {
+          <span><i class="fa-light fa-spinner fa-spin"></i> Submitting…</span>
+          } @else {
+          <span>I have paid</span>
+          }
+        </button>
+      </div>
+
+      @if (isCryptoDeposit()) {
+      <section class="dep-upi dep-split__right">
+        <h3>{{ selectedMethod().label }} deposit</h3>
+        <p class="dep-panel-hint">Send only {{ depositCoin() }} on the network shown below to the brand address.
+          @if (cashConversion?.payment_amount) {
+          Pay <strong>{{ formatPaymentAmount() }}</strong> — your wallet will be credited
+          <strong>{{ amount || '0' }} {{ currency() }}</strong> after admin approval.
+          }
+        </p>
+        @for (row of cryptoDepositDetails(); track row.label) {
+        <div class="dep-upi-row" [class.dep-upi-row--address]="row.label === 'Deposit address'">
+          <span>{{ row.label }}</span>
+          <div>
+            @if (row.label === 'Deposit address') {
+            <code>{{ row.value }}</code>
+            } @else {
+            <strong>{{ row.value }}</strong>
+            }
+            <button type="button" (click)="copyText(row.value)" [attr.aria-label]="'Copy ' + row.label">
+              <i class="fa-light fa-copy"></i>
+            </button>
+          </div>
+        </div>
+        }
+      </section>
+      }
+
+      @if (isBankDeposit()) {
+      <section class="dep-upi dep-split__right">
+        <h3>Bank account details</h3>
+        <p class="dep-panel-hint">Transfer to the account below, then enter your UTR and upload payment proof.</p>
+        @for (row of bankDepositDetails(); track row.label) {
+        <div class="dep-upi-row">
+          <span>{{ row.label }}</span>
+          <div>
+            <strong>{{ row.value }}</strong>
+            <button type="button" (click)="copyText(row.value)" [attr.aria-label]="'Copy ' + row.label">
+              <i class="fa-light fa-copy"></i>
+            </button>
+          </div>
+        </div>
+        }
+      </section>
+      }
+
+      @if (isUpiDeposit()) {
+      <section class="dep-upi dep-split__right">
+        <h3>Pay via UPI</h3>
+        <div class="dep-upi-row">
+          <span>Payee name</span>
+          <div>
+            <strong>{{ payeeName() }}</strong>
+            <button type="button" (click)="copyText(payeeName())"><i class="fa-light fa-copy"></i></button>
+          </div>
+        </div>
+        <div class="dep-upi-row">
+          <span>UPI ID</span>
+          <div>
+            <code>{{ upiId() }}</code>
+            <button type="button" (click)="copyText(upiId())"><i class="fa-light fa-copy"></i></button>
+          </div>
+        </div>
+        <div class="dep-qr" [class.ready]="canPayUpi()">
+          @if (qrImageUrl(); as img) {
+          <img [src]="img" alt="UPI QR" width="148" height="148" />
+          } @else {
+          <qrcode [qrdata]="upiPayUri()" [width]="148" [margin]="1" errorCorrectionLevel="M"></qrcode>
+          }
+        </div>
+        @if (!canPayUpi()) {
+        <p class="dep-field-error dep-field-error--compact">Enter a valid amount ({{ depositAmountRangeLabel() }}).</p>
+        }
+        <div class="dep-upi-actions">
+          <button type="button" class="dep-cta dep-cta--secondary" [disabled]="!canPayUpi()" (click)="openUpiApp()">
+            Open UPI app
+          </button>
+          <button type="button" class="dep-cta-outline" [disabled]="!canPayUpi()" (click)="copyText(upiPayUri())">
+            Copy link
+          </button>
+        </div>
+      </section>
+      }
+    </form>
+    }
+    }
+  </div>
+
+  @if (isDepositProofViewerOpen && depositFilePreviewUrl) {
+  <div class="dep-proof-viewer" role="dialog" aria-modal="true" [attr.aria-label]="depositFileLabel() + ' preview'">
+    <button type="button" class="dep-proof-viewer__backdrop" (click)="closeDepositProofViewer()"
+      aria-label="Close preview"></button>
+    <div class="dep-proof-viewer__panel">
+      <header class="dep-proof-viewer__head">
+        <div class="dep-proof-viewer__meta">
+          <strong>{{ depositFileName }}</strong>
+          @if (depositFile; as proofFile) {
+          <span>{{ formatDepositFileSize(proofFile.size) }}</span>
+          }
+        </div>
+        <button type="button" class="dep-proof-viewer__close" (click)="closeDepositProofViewer()"
+          aria-label="Close preview">
+          <i class="fa-light fa-xmark"></i>
+        </button>
+      </header>
+      <div class="dep-proof-viewer__body">
+        <img [src]="depositFilePreviewUrl" [alt]="depositFileName" />
+      </div>
+    </div>
+  </div>
+  }
+</div>

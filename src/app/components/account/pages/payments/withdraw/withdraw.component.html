@@ -1,0 +1,313 @@
+<div class="wd-page">
+  <div class="wd">
+    <!-- <nav class="wd-crumb">
+      <a routerLink="/home">Home</a>
+      <span>›</span>
+      <span>Withdraw</span>
+    </nav> -->
+
+    <header class="wd-head mt-2">
+      @if (withdrawTab === 'withdraw' && withdrawStep === 'amount') {
+      <button type="button" class="wd-head__back" (click)="backToMethods()" aria-label="Back">
+        <i class="fa-light fa-arrow-left"></i>
+      </button>
+      }
+      <div class="wd-head__content">
+        <h1>Withdraw</h1>
+        <p>{{ withdrawTab === 'requests' ?
+          'Track your submitted withdrawal requests' : withdrawStep === 'methods' ?
+          'Choose a payout method to withdraw funds' : selectedMethod().label }}</p>
+      </div>
+    </header>
+
+    <div class="wd-tabs">
+      <button type="button" class="wd-tabs__btn" [class.active]="withdrawTab === 'withdraw'"
+        (click)="showWithdrawTab('withdraw')">New withdrawal</button>
+      <button type="button" class="wd-tabs__btn" [class.active]="withdrawTab === 'requests'"
+        (click)="showWithdrawTab('requests')">My requests</button>
+    </div>
+
+    @if (withdrawTab === 'requests') {
+    <app-withdraw-requests (makeWithdrawClick)="showWithdrawTab('withdraw')"></app-withdraw-requests>
+    }
+
+    @if (withdrawTab === 'withdraw') {
+    @if (configError) {
+    <p class="wd-error-banner">{{ configError }}</p>
+    }
+
+    @if (showKycWithdrawalBanner) {
+    <p class="wd-kyc-banner">
+      <i class="fa-light fa-shield-check"></i>
+      KYC verification may be required before withdrawal is processed.
+    </p>
+    }
+
+    @if (withdrawStep === 'methods') {
+    <h2 class="wd-section-title">All payout methods</h2>
+
+    @if (configLoading) {
+    <p class="wd-loading"><i class="fa-light fa-spinner fa-spin"></i> Loading…</p>
+    } @else if (!paymentMethods.length) {
+    <p class="wd-empty">No withdrawal methods available.</p>
+    } @else {
+    <div class="wd-grid">
+      @for (method of paymentMethods; track method.id) {
+      <button type="button" class="wd-card" (click)="selectWithdrawMethod(method)">
+        <img [src]="method.iconUrl" alt="" width="40" height="40" />
+        <h3>{{ method.label }}</h3>
+        <p><span>Processing time</span> {{ method.processingTime }}</p>
+        <p><span>Fee</span> {{ methodFee(method) }}</p>
+      </button>
+      }
+    </div>
+    }
+    }
+
+    @if (withdrawStep === 'amount') {
+    <form class="wd-split" [class.wd-split--side]="showPayoutSidePanel()" (ngSubmit)="submitWithdraw()" novalidate>
+      <div class="wd-split__left">
+        <label class="wd-label">Payment method</label>
+        <button type="button" class="wd-select" (click)="backToMethods()">
+          <span><img [src]="selectedMethod().iconUrl" alt="" width="22" height="22" /> {{ selectedMethod().label
+            }}</span>
+          <i class="fa-light fa-chevron-down"></i>
+        </button>
+
+        <label class="wd-label">Wallet balance</label>
+        <div class="wd-select wd-select--static">
+          <span><span class="wd-tag">wallet</span> Main Wallet</span>
+          @if (walletLoading) {
+          <strong class="wd-wallet-loading"><i class="fa-light fa-spinner fa-spin"></i></strong>
+          } @else {
+          <strong>{{ walletTotalBalance() }}</strong>
+          }
+        </div>
+        @if (!walletLoading && showWithdrawableHint()) {
+        <p class="wd-balance-hint">
+          Withdrawable {{ withdrawableBalance() }} · {{ walletReservedBalance() }} reserved
+        </p>
+        }
+
+        <div class="wd-payout-section">
+          <div class="wd-payout-section__head">
+            <label class="wd-label">Payout account</label>
+            @if (!showAddPayoutForm) {
+            <button type="button" class="wd-link-btn" (click)="openAddPayoutForm()">+ Add account</button>
+            }
+          </div>
+
+          @if (showAddPayoutForm) {
+          <div class="wd-add-form">
+            <label class="wd-label">Label</label>
+            <input class="wd-input" type="text" [(ngModel)]="payoutLabel" name="payoutLabel"
+              [placeholder]="isCryptoWithdraw() ? cryptoPayoutLabelPlaceholder() : 'e.g. HDFC Main'" autocomplete="off"
+              maxlength="80" />
+            @if (payoutLabelError(); as err) {
+            <p class="wd-field-error">{{ err }}</p>
+            }
+
+            @if (isCryptoWithdraw()) {
+            <div class="wd-field-row" [class.wd-field-row--single]="!withdrawNetwork()">
+              <div class="wd-field-col">
+                <label class="wd-label">Coin</label>
+                <div class="wd-select wd-select--static">
+                  <span>{{ withdrawCoin() }}</span>
+                </div>
+              </div>
+              @if (withdrawNetwork()) {
+              <div class="wd-field-col">
+                <label class="wd-label">Network</label>
+                <div class="wd-select wd-select--static">
+                  <span>{{ withdrawNetwork() }}</span>
+                </div>
+              </div>
+              }
+            </div>
+            }
+
+            @for (field of payoutFields(); track field.key) {
+            <label class="wd-label">{{ field.label }}</label>
+            <input class="wd-input" type="text" [(ngModel)]="payoutForm[field.key]" [name]="'payout_' + field.key"
+              [placeholder]="field.label" autocomplete="off"
+              [attr.maxlength]="field.key === 'address' || field.key === 'wallet_address' ? 200 : null" />
+            @if (payoutFieldError(field.key); as err) {
+            <p class="wd-field-error">{{ err }}</p>
+            }
+            }
+
+            <label class="wd-check">
+              <input type="checkbox" [(ngModel)]="isDefaultPayout" name="isDefaultPayout" />
+              Set as default account
+            </label>
+
+            @if (savePayoutError) {
+            <p class="wd-field-error">{{ savePayoutError }}</p>
+            }
+
+            <div class="wd-add-form__actions">
+              <button type="button" class="wd-cta-outline" (click)="cancelAddPayoutForm()">Cancel</button>
+              <button type="button" class="wd-cta wd-cta--inline" (click)="savePayoutMethod()"
+                [disabled]="isSavingPayout">
+                @if (isSavingPayout) {
+                <i class="fa-light fa-spinner fa-spin"></i> Saving…
+                } @else {
+                {{ isEditingPayoutForm() ? 'Update account' : 'Save account' }}
+                }
+              </button>
+            </div>
+          </div>
+          } @else if (!payoutsForSelectedMethod().length) {
+          <div class="wd-payout-empty">
+            <p>No saved {{ isCryptoWithdraw() ? withdrawCoin() + ' wallets' : 'accounts' }} for this method.</p>
+            <button type="button" class="wd-cta wd-cta--inline" (click)="openAddPayoutForm()">
+              {{ isCryptoWithdraw() ? 'Add wallet address' : 'Add payout account' }}
+            </button>
+          </div>
+          } @else {
+          <div class="wd-payout-list">
+            @for (payout of payoutsForSelectedMethod(); track payout.payoutId) {
+            <div class="wd-payout-card-wrap" [class.active]="selectedPayoutId === payout.payoutId">
+              <button type="button" class="wd-payout-card" [class.active]="selectedPayoutId === payout.payoutId"
+                (click)="selectSavedPayout(payout.payoutId)">
+                <div>
+                  <strong>{{ payout.label }}</strong>
+                  <span>{{ payoutSummary(payout) }}</span>
+                </div>
+                <div class="wd-payout-card__badges">
+                  @if (payout.isDefault) {
+                  <em>Default</em>
+                  }
+                  @if (payout.isVerified) {
+                  <em class="wd-payout-card__verified">Verified</em>
+                  }
+                </div>
+              </button>
+              <div class="wd-payout-card__actions">
+                <button type="button" class="wd-link-btn" (click)="openEditPayoutForm(payout, $event)">Edit</button>
+                <button type="button" class="wd-link-btn wd-link-btn--danger"
+                  (click)="deletePayoutMethod(payout, $event)" [disabled]="isDeletingPayoutId === payout.payoutId">
+                  @if (isDeletingPayoutId === payout.payoutId) {
+                  Deleting…
+                  } @else {
+                  Delete
+                  }
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+          }
+          @if (payoutSelectionError(); as err) {
+          <p class="wd-field-error">{{ err }}</p>
+          }
+        </div>
+
+        <div class="wd-amount-box" [class.error]="!!amountError()">
+          <span>Wallet debit</span>
+          <div class="wd-amount-row">
+            <input type="text" class="wd-amount-input" [value]="amount" name="amount" placeholder="0"
+              inputmode="decimal" autocomplete="off" [attr.maxlength]="withdrawAmountMaxLength()"
+              (input)="onWithdrawAmountInput($event)" (keydown)="onWithdrawAmountKeyDown($event)" />
+            <em>{{ currency() }}</em>
+          </div>
+        </div>
+
+        @if (showConversionPanel()) {
+        <div class="wd-convert" [class.wd-convert--loading]="conversionLoading">
+          @if (conversionLoading) {
+          <p><i class="fa-light fa-spinner fa-spin"></i> Calculating conversion…</p>
+          } @else if (conversionError) {
+          <p class="wd-field-error wd-field-error--compact">{{ conversionError }}</p>
+          } @else if (cashConversion) {
+          <div class="wd-convert__row">
+            <span>You receive</span>
+            <strong>{{ formatReceiveAmount() }}</strong>
+          </div>
+          @if (cashConversion.rate_label) {
+          <p class="wd-convert__rate">{{ cashConversion.rate_label }}</p>
+          }
+          @if (cashConversion.summary) {
+          <p class="wd-convert__summary">{{ cashConversion.summary }}</p>
+          }
+          }
+        </div>
+        }
+
+        <div class="wd-quick">
+          @for (preset of quickAmounts(); track preset) {
+          <button type="button" (click)="setWithdrawAmount(preset)">{{ preset | number }} {{ currency() }}</button>
+          }
+        </div>
+        @if (amountError(); as err) {
+        <p class="wd-field-error">{{ err }}</p>
+        } @else {
+        <p class="wd-hint">{{ withdrawAmountRangeLabel() }}</p>
+        }
+
+        <label class="wd-label">Note </label>
+        <input class="wd-input" type="text" [(ngModel)]="playerNote" name="playerNote" placeholder="Withdrawal note"
+          autocomplete="off" maxlength="500" />
+        @if (playerNoteError(); as err) {
+        <p class="wd-field-error">{{ err }}</p>
+        }
+
+        @if (confirmWithdrawFormError(); as formErr) {
+        <p class="wd-field-error">{{ formErr }}</p>
+        }
+
+        @if (withdrawSubmitError) {
+        <p class="wd-field-error">{{ withdrawSubmitError }}</p>
+        }
+
+        <button type="submit" class="wd-cta"
+          [disabled]="withdrawSubmitting || showAddPayoutForm || showKycWithdrawalBanner">
+          @if (withdrawSubmitting) {
+          <span><i class="fa-light fa-spinner fa-spin"></i> Submitting…</span>
+          } @else {
+          <span>Withdraw now</span>
+          }
+        </button>
+      </div>
+
+      @if (showPayoutSidePanel()) {
+      <section class="wd-upi wd-split__right">
+        <h3>Payout details</h3>
+        <p class="wd-panel-hint">Funds will be sent to this saved account after approval.
+          @if (isCryptoWithdraw()) {
+          @if (cashConversion?.payment_amount) {
+          You will receive <strong>{{ formatReceiveAmount() }}</strong> for
+          <strong>{{ amount || '0' }} {{ currency() }}</strong> from your wallet.
+          } @else if (amount) {
+          Select a saved wallet and enter amount to preview conversion.
+          }
+          }
+        </p>
+        @if (selectedPayout(); as payout) {
+        <div class="wd-upi-row">
+          <span>Account label</span>
+          <div><strong>{{ payout.label }}</strong></div>
+        </div>
+        }
+        @for (row of payoutDetailRows(); track row.label) {
+        <div class="wd-upi-row" [class.wd-upi-row--address]="row.label === 'Wallet address'">
+          <span>{{ row.label }}</span>
+          <div>
+            @if (row.label === 'Wallet address') {
+            <code>{{ row.value }}</code>
+            } @else {
+            <strong>{{ row.value }}</strong>
+            }
+            <button type="button" (click)="copyText(row.value)" [attr.aria-label]="'Copy ' + row.label">
+              <i class="fa-light fa-copy"></i>
+            </button>
+          </div>
+        </div>
+        }
+      </section>
+      }
+    </form>
+    }
+    }
+  </div>
+</div>

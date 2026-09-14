@@ -1,0 +1,240 @@
+<div class="cash-ledger-page">
+  <div class="cash-ledger-shell">
+
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account</div>
+          <h1 class="page-title">Cash Ledger</h1>
+          <p class="page-subtitle">
+            Track every credit and debit on your wallet — deposits, trades, charges, and more.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="filter-search">
+        <i class="fa-light fa-magnifying-glass"></i>
+        <input type="text" placeholder="Reference…" [(ngModel)]="filterReference"
+          (ngModelChange)="onReferenceChange()" />
+      </div>
+
+      <div class="filter-group">
+        <select [(ngModel)]="filterDirection" (ngModelChange)="onFilterChange()">
+          <option [ngValue]="null">All Directions</option>
+          @for (opt of DIRECTION_OPTIONS; track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <select [(ngModel)]="filterTransactionType" (ngModelChange)="onFilterChange()">
+          <option [ngValue]="null">All Types</option>
+          @for (opt of TRANSACTION_TYPE_OPTIONS; track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-amount-group">
+        <input type="number" min="0" step="0.01" placeholder="Min amount" [(ngModel)]="filterMinAmount"
+          (ngModelChange)="onFilterChange()" />
+        <span class="date-sep">—</span>
+        <input type="number" min="0" step="0.01" placeholder="Max amount" [(ngModel)]="filterMaxAmount"
+          (ngModelChange)="onFilterChange()" />
+      </div>
+
+      <div class="filter-date-group">
+        <input type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" />
+        <span class="date-sep">—</span>
+        <input type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" />
+      </div>
+
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">
+        <i class="fa-light fa-xmark"></i> Clear
+      </button>
+    </div>
+
+    @if (loading) {
+    <div class="metrics-grid">
+      <div class="metric-card sk-card" *ngFor="let i of [1,2,3,4,5]">
+        <div class="sk sk-label"></div>
+        <div class="sk sk-value"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="sk sk-label"></div>
+      </div>
+      <div class="sk-rows">
+        <div class="sk sk-row" *ngFor="let i of [1,2,3,4,5,6]"></div>
+      </div>
+    </div>
+    }
+
+    @if (!loading && error) {
+    <div class="ledger-error">
+      <i class="fa-light fa-circle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+    }
+
+    @if (!loading && !error) {
+    @if (summary) {
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Net Change</div>
+        <div class="metric-value" [ngClass]="plClass(summary.net_change)">
+          {{ summary.net_change >= 0 ? '+' : '' }}{{ brandFmt(summary.net_change) }}
+        </div>
+        <div class="metric-desc">{{ isPageSummary ? 'Credits minus debits on this page' : 'Credits minus debits in this view' }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Credits</div>
+        <div class="metric-value val-positive">{{ brandFmt(summary.total_credits) }}</div>
+        <div class="metric-desc">{{ summary.credit_count }} credit {{ isPageSummary ? 'on this page' : 'entries' }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Debits</div>
+        <div class="metric-value val-negative">{{ brandFmt(summary.total_debits) }}</div>
+        <div class="metric-desc">{{ summary.debit_count }} debit {{ isPageSummary ? 'on this page' : 'entries' }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Credit Count</div>
+        <div class="metric-value">{{ summary.credit_count }}</div>
+        <div class="metric-desc">{{ isPageSummary ? 'Incoming on this page' : 'Incoming transactions' }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Debit Count</div>
+        <div class="metric-value">{{ summary.debit_count }}</div>
+        <div class="metric-desc">{{ isPageSummary ? 'Outgoing on this page' : 'Outgoing transactions' }}</div>
+      </div>
+    </div>
+    }
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <i class="fa-light fa-book"></i>
+          <span>Ledger Entries</span>
+          <span class="count-badge">{{ total }}</span>
+        </div>
+      </div>
+
+      <div class="table-wrap ledger-table-wrap">
+        @if (entries.length) {
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Direction</th>
+              <th class="right">Amount</th>
+              <th class="right">Balance Before</th>
+              <th class="right">Balance After</th>
+              <th>Description</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of entries">
+              <td class="date-cell">{{ fmtDate(e.created_at) }}</td>
+              <td><span class="type-badge">{{ transactionTypeLabel(e.transaction_type) }}</span></td>
+              <td>
+                <span class="direction-badge" [ngClass]="directionClass(e.direction)">{{ e.direction }}</span>
+              </td>
+              <td class="right amount-cell" [ngClass]="amountClass(e)">
+                {{ e.direction === 'CREDIT' ? '+' : '−' }}{{ brandFmt(e.amount) }}
+              </td>
+              <td class="right">{{ brandFmt(e.balance_before) }}</td>
+              <td class="right balance-cell">{{ brandFmt(e.balance_after) }}</td>
+              <td class="desc-cell">{{ e.description || '—' }}</td>
+              <td><span class="ref-badge">{{ referenceLabel(e) }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+        }
+        @if (!entries.length) {
+        <div class="no-data">
+          <i class="fa-light fa-inbox"></i>
+          <span>No ledger entries found</span>
+          @if (hasFilters) {
+          <span class="no-data-sub">Try clearing filters</span>
+          }
+        </div>
+        }
+      </div>
+
+      @if (total > 0) {
+      <div class="pagination-bar" [class.pagination-bar--one-page]="totalPages <= 1">
+        <div class="pagination-bar-left">
+          <label class="limit-lbl" for="cl-limit">Per page</label>
+          <select id="cl-limit" class="limit-select" [(ngModel)]="limit" (ngModelChange)="onLimitChange()">
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+            <option [ngValue]="100">100</option>
+          </select>
+        </div>
+
+        <div class="pagination-bar-center">
+          <span class="pg-range" aria-live="polite">
+            <span class="pg-range-nums">
+              <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
+            </span>
+            <span class="pg-of">of</span>
+            <strong class="pg-total-count">{{ total }}</strong>
+            <span class="pg-total-label">entries</span>
+          </span>
+        </div>
+
+        <div class="pagination-bar-right">
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage <= 1" (click)="prevPage()"
+            aria-label="Previous page">
+            <i class="fa-light fa-chevron-left"></i>
+            <span class="pg-nav-txt">Prev</span>
+          </button>
+
+          @if (totalPages > 1) {
+          <div class="pg-numbers" role="navigation" aria-label="Pages">
+            <ng-container *ngFor="let item of pageNumbersForView()">
+              @if (item === 'ellipsis') {
+              <span class="pg-ellipsis" aria-hidden="true">…</span>
+              }
+              @if (item !== 'ellipsis') {
+              <button type="button" class="pg-num" [class.pg-num--active]="item === currentPage"
+                [disabled]="item === currentPage" (click)="goToPage($any(item))">
+                {{ item }}
+              </button>
+              }
+            </ng-container>
+          </div>
+          }
+
+          @if (totalPages > 1) {
+          <span class="pg-mobile-page">Page {{ currentPage }} / {{ totalPages }}</span>
+          }
+
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage >= totalPages" (click)="nextPage()"
+            aria-label="Next page">
+            <span class="pg-nav-txt">Next</span>
+            <i class="fa-light fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

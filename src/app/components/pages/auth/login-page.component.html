@@ -1,0 +1,74 @@
+<div class="trade-login__card trade-login__card--login">
+  <div class="trade-login__card-head">
+    <h2 class="trade-login__card-title">Welcome back</h2>
+    <p class="trade-login__card-sub">Enter your credentials to continue</p>
+  </div>
+
+  <div class="trade-login__field">
+    <label class="trade-login__label" for="userName">Username</label>
+    <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="error && !loginModel.username">
+      <span class="trade-login__input-icon" aria-hidden="true"><span><i class="fa-light fa-user"></i></span></span>
+      <input id="userName" name="userName" class="trade-login__input" type="text" autocomplete="username"
+        placeholder="Enter username" [(ngModel)]="loginModel.username" [ngModelOptions]="{ standalone: true }" />
+    </div>
+  </div>
+
+  <div class="trade-login__field">
+    <label class="trade-login__label" for="password">Password</label>
+    <div class="trade-login__input-wrap">
+      <span class="trade-login__input-icon" aria-hidden="true"><span><i class="fa-light fa-lock"></i></span></span>
+      <input id="password" name="password" class="trade-login__input trade-login__input--password"
+        [type]="passVisible ? 'text' : 'password'" autocomplete="current-password" placeholder="Enter password"
+        [(ngModel)]="loginModel.password" [ngModelOptions]="{ standalone: true }" (keypress)="getEnterEvent($event)" />
+      <button type="button" class="trade-login__eye" (click)="passVisible = !passVisible"
+        [attr.aria-label]="passVisible ? 'Hide password' : 'Show password'">
+        @if (passVisible) {
+        <span>
+          <i class="fa-light fa-eye" aria-hidden="true"></i>
+        </span>
+        } @else {
+        <span>
+          <i class="fa-light fa-eye-slash" aria-hidden="true"></i>
+        </span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="trade-login__auth-row">
+    <label class="trade-login__remember">
+      <input type="checkbox" class="trade-login__checkbox" [(ngModel)]="rememberMe"
+        [ngModelOptions]="{ standalone: true }" />
+      <span>Remember me</span>
+    </label>
+    <a routerLink="/forgot-password" class="trade-login__link trade-login__forgot-link">Forgot password?</a>
+  </div>
+
+  <button type="button" class="trade-login__submit" (click)="login()" [disabled]="isLoginClicked">
+    @if (!isLoginClicked) {
+    Sign in
+    <span><i class="fa-light fa-arrow-right" aria-hidden="true"></i></span>
+    } @else {
+    <span class="trade-login__spinner" role="status" aria-label="Signing in"></span>
+    }
+  </button>
+
+  @if (error) {
+  <div class="trade-login__error" role="alert">
+    <span class="trade-login__error-icon" aria-hidden="true">
+      <span><i class="fa-light fa-triangle-exclamation"></i></span>
+    </span>
+    <span class="trade-login__error-text">
+      <strong>Login failed</strong>
+      {{ error }}
+    </span>
+  </div>
+  }
+
+  @if (!sharedservice.isB2BBrand()) {
+  <p class="trade-login__switch">
+    Don&apos;t have an account?
+    <a routerLink="/register" class="trade-login__link">Register now</a>
+  </p>
+  }
+</div>

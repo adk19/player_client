@@ -1,0 +1,293 @@
+<div class="acc-settings">
+
+  <div class="acc-settings-shell">
+
+    <!-- Left nav -->
+    <aside class="acc-settings-nav" aria-label="Account settings navigation">
+      <div class="nav-head">
+        <div class="nav-kicker">Account</div>
+        <div class="nav-title">Settings</div>
+      </div>
+
+      <div class="nav-chips" role="tablist" aria-label="Settings sections">
+        <button type="button" class="nav-item" role="tab" [attr.aria-selected]="activeTab==='profile'"
+          [class.active]="activeTab==='profile'" (click)="setTab('profile')">
+          Account
+        </button>
+
+        <button type="button" class="nav-item" role="tab" [attr.aria-selected]="activeTab==='security'"
+          [class.active]="activeTab==='security'" (click)="setTab('security')">
+          <span class="nav-dot" aria-hidden="true"></span>
+          Security
+        </button>
+
+        <button type="button" class="nav-item" role="tab" [attr.aria-selected]="activeTab==='notifications'"
+          [class.active]="activeTab==='notifications'" (click)="setTab('notifications')">
+          Alerts
+        </button>
+
+        <button type="button" class="nav-item" role="tab" [attr.aria-selected]="activeTab==='data'"
+          [class.active]="activeTab==='data'" (click)="setTab('data')">
+          Data
+        </button>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <section class="acc-settings-content">
+      <div class="content-header">
+        <div class="content-title">
+          <div class="h1">
+            @if (activeTab==='profile') { Account }
+            @if (activeTab==='security') { Security }
+            @if (activeTab==='notifications') { Notifications }
+            @if (activeTab==='data') { Data & cache }
+          </div>
+          <div class="hsub">Account details, security, alerts, and cache — only what is wired up today.</div>
+        </div>
+      </div>
+
+      @if (loadingProfile) {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Loading…</div>
+            <div class="row-desc">Fetching your account details.</div>
+          </div>
+          <span class="row-right muted">Please wait</span>
+        </div>
+      </div>
+      } @else if (profileError) {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Could not load profile</div>
+            <div class="row-desc">{{ profileError }}</div>
+          </div>
+          <span class="row-right muted">—</span>
+        </div>
+      </div>
+      } @else {
+
+      @if (activeTab==='profile') {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Username</div>
+            <div class="row-desc">{{ profile?.username || '—' }}</div>
+          </div>
+          <button type="button" class="btn" (click)="copy(profile?.username)">Copy</button>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Email</div>
+            <div class="row-desc">{{ profile?.email || '—' }}</div>
+          </div>
+          <button type="button" class="btn" (click)="copy(profile?.email)">Copy</button>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Phone</div>
+            <div class="row-desc">{{ profile?.phone || '—' }}</div>
+          </div>
+          <span class="row-right muted">—</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Platform</div>
+            <div class="row-desc">{{ shared.brandName || 'Trading Platform' }}</div>
+          </div>
+          <span class="row-right muted">Active</span>
+        </div>
+      </div>
+      }
+
+      @if (activeTab==='security') {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Email address</div>
+            <div class="row-desc">{{ profile?.email || '—' }}</div>
+          </div>
+          <button type="button" class="btn" (click)="copy(profile?.email)">Copy</button>
+        </div>
+
+        @if (!shared.isB2BUser()) {
+        <div class="card-divider"></div>
+
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Password</div>
+            <div class="row-desc">Set a unique password to protect your account.</div>
+          </div>
+          <button type="button" class="btn" (click)="togglePasswordForm()">
+            @if (!showPasswordForm) { Change password } @else { Close }
+          </button>
+        </div>
+
+        @if (showPasswordForm) {
+        <div class="pwd-form" (keydown.escape)="togglePasswordForm()">
+          @if (passwordFieldError) {
+          <div class="pwd-form-error" role="alert">{{ passwordFieldError }}</div>
+          }
+          <div class="pwd-field">
+            <label class="pwd-label" for="set-old-pw">Current password</label>
+            <div class="pwd-field-wrap">
+              <input id="set-old-pw" class="pwd-input" [type]="showOldPw ? 'text' : 'password'" name="oldPw"
+                [(ngModel)]="oldPw" placeholder="Enter your current password" autocomplete="current-password"
+                [disabled]="passwordSaving" />
+              <button type="button" class="pw-toggle-btn" tabindex="-1" (click)="showOldPw = !showOldPw"
+                [attr.aria-label]="showOldPw ? 'Hide password' : 'Show password'">
+                @if (showOldPw) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
+          </div>
+          <div class="pwd-field">
+            <label class="pwd-label" for="set-new-pw">New password</label>
+            <div class="pwd-field-wrap">
+              <input id="set-new-pw" class="pwd-input" [type]="showNewPw ? 'text' : 'password'" name="newPw"
+                [(ngModel)]="newPw" placeholder="Add Your New Password" autocomplete="new-password"
+                [disabled]="passwordSaving" />
+              <button type="button" class="pw-toggle-btn" tabindex="-1" (click)="showNewPw = !showNewPw"
+                [attr.aria-label]="showNewPw ? 'Hide password' : 'Show password'">
+                @if (showNewPw) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
+          </div>
+          <div class="pwd-field">
+            <label class="pwd-label" for="set-confirm-pw">Confirm new password</label>
+            <div class="pwd-field-wrap">
+              <input id="set-confirm-pw" class="pwd-input" [type]="showConfirmPw ? 'text' : 'password'" name="confirmPw"
+                [(ngModel)]="confirmPw" placeholder="Confirm your new password" autocomplete="new-password"
+                [disabled]="passwordSaving" />
+              <button type="button" class="pw-toggle-btn" tabindex="-1" (click)="showConfirmPw = !showConfirmPw"
+                [attr.aria-label]="showConfirmPw ? 'Hide password' : 'Show password'">
+                @if (showConfirmPw) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
+          </div>
+          <div class="pwd-actions">
+            <button type="button" class="btn btn-primary" (click)="submitPasswordUpdate()" [disabled]="passwordSaving">
+              @if (passwordSaving) { Updating… } @else { Update password }
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="togglePasswordForm()"
+              [disabled]="passwordSaving">Cancel</button>
+          </div>
+        </div>
+        }
+
+        <div class="card-divider"></div>
+
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">2-step verification</div>
+            <div class="row-desc">Extra security using a one-time code.</div>
+          </div>
+          <button type="button" class="toggle-btn" [class.on]="twoFactorEnabled" (click)="toggleTwoFactor()"
+            [attr.aria-pressed]="twoFactorEnabled">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+        }
+      </div>
+
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Theme</div>
+            <div class="row-desc">{{ isDark ? 'Dark mode enabled' : 'Light mode enabled' }}</div>
+          </div>
+          <button type="button" class="toggle-btn" [class.on]="isDark" (click)="toggleTheme()"
+            [attr.aria-pressed]="isDark">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </div>
+      }
+
+      @if (activeTab==='notifications') {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Push Notifications</div>
+            <div class="row-desc">Trade alerts and platform updates.</div>
+          </div>
+          <button type="button" class="toggle-btn" [class.on]="notificationsEnabled" (click)="toggleNotifications()"
+            [attr.aria-pressed]="notificationsEnabled">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Sound Effects</div>
+            <div class="row-desc">Play sounds on trade events.</div>
+          </div>
+          <button type="button" class="toggle-btn" [class.on]="soundEnabled" (click)="toggleSound()"
+            [attr.aria-pressed]="soundEnabled">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </div>
+      }
+
+      @if (activeTab==='data') {
+      <div class="card">
+        <div class="card-row">
+          <div class="row-left">
+            <div class="row-title">Clear Market Cache</div>
+            <div class="row-desc">Reload markets on next visit.</div>
+          </div>
+          <button type="button" class="btn" (click)="clearCache()">Clear</button>
+        </div>
+      </div>
+      }
+      }
+    </section>
+
+  </div>
+</div>

@@ -1,0 +1,1389 @@
+<ng-container *ngIf="isInsideTradePage">
+  <div class="positions-main">
+    <div class="positions-content">
+
+      <!-- Open Positions Table -->
+      <div class="positions-table-wrapper" *ngIf="activeTab==='positions'">
+        <table class="positions-table" [ngStyle]="getTableColStyle('open')">
+          <thead>
+            <tr>
+              @if (colV('open', 'symbol')) {
+              <th class="col-symbol" data-col-id="symbol">
+                <span class="col-hdr-label">Symbol</span>
+                @if (isDesktopTradeLayout && !isColProtected('symbol')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'symbol', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'ticket')) {
+              <th class="col-ticket" data-col-id="ticket">
+                <span class="col-hdr-label">Ticket</span>
+                @if (isDesktopTradeLayout && !isColProtected('ticket')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'ticket', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'time')) {
+              <th class="col-time" data-col-id="time">
+                <span class="col-hdr-label">Time</span>
+                @if (isDesktopTradeLayout && !isColProtected('time')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'time', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'type')) {
+              <th class="col-type" data-col-id="type">
+                <span class="col-hdr-label">Type</span>
+                @if (isDesktopTradeLayout && !isColProtected('type')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'type', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'volume')) {
+              <th class="col-volume right" data-col-id="volume">
+                <span class="col-hdr-label">Volume</span>
+                @if (isDesktopTradeLayout && !isColProtected('volume')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'volume', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'leverage')) {
+              <th class="col-leverage right" data-col-id="leverage">
+                <span class="col-hdr-label">Leverage</span>
+                @if (isDesktopTradeLayout && !isColProtected('leverage')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'leverage', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'usedMargin')) {
+              <th class="col-used-margin right" data-col-id="usedMargin">
+                <span class="col-hdr-label">Used margin</span>
+                @if (isDesktopTradeLayout && !isColProtected('usedMargin')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'usedMargin', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'openPrice')) {
+              <th class="col-open-price right" data-col-id="openPrice">
+                <span class="col-hdr-label">Open Price</span>
+                @if (isDesktopTradeLayout && !isColProtected('openPrice')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'openPrice', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'sl')) {
+              <th class="col-sl right" data-col-id="sl">
+                <span class="col-hdr-label">S / L</span>
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'tp')) {
+              <th class="col-tp right" data-col-id="tp">
+                <span class="col-hdr-label">T / P</span>
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'currentPrice')) {
+              <th class="col-close-price right" data-col-id="currentPrice">
+                <span class="col-hdr-label">Current Price</span>
+                @if (isDesktopTradeLayout && !isColProtected('currentPrice')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'currentPrice', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'profit')) {
+              <th class="col-profit right" data-col-id="profit">
+                <span class="col-hdr-label">P / L</span>
+                @if (isDesktopTradeLayout && !isColProtected('profit')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('open', 'profit', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'open')"></span> }
+              </th>
+              }
+              @if (colV('open', 'close')) {
+              @if (isDesktopTradeLayout) {
+              <th class="col-actions right" data-col-id="close">
+                <button type="button" class="ps-close-all-btn" (click)="closeAllPositions()"
+                  [disabled]="!positions.length || closingAllPositions" title="Close all open positions">
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                  {{ closingAllPositions ? 'Closing...' : 'Close All' }}
+                </button>
+                <span class="col-resizer" (pointerdown)="startResize($event, 'open')"></span>
+              </th>
+              } @else {
+              <th class="col-actions right total-amt" data-col-id="close"
+                [ngClass]="getPlTotalClass(openPositionsTotalPnl)">
+                <span class="pl-value">{{ formatWithBrandCurrency(openPositionsTotalPnl) }}</span>
+              </th>
+              }
+              }
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let position of positions; trackBy: trackByPositionId">
+              @if (colV('open', 'symbol')) { <td class="col-symbol">{{ position.market }}</td> }
+              @if (colV('open', 'ticket')) { <td class="col-ticket">{{ position.position_id }}</td> }
+              @if (colV('open', 'time')) { <td class="col-time">{{ formatTime(position.opened_at) }}</td> }
+              @if (colV('open', 'type')) {
+              <td class="col-type">
+                <span class="type-pill" [ngClass]="getTypeClass(position.type)">
+                  {{ getTypeLabel(position.type) | lowercase }}
+                </span>
+              </td>
+              }
+              @if (colV('open', 'volume')) { <td class="col-volume right">{{ position.quantity | number:'1.2-4' }}</td>
+              }
+              @if (colV('open', 'leverage')) {
+              <td class="col-leverage right">
+                <span class="leverage-tag">{{ formatPositionLeverage(position) }}</span>
+              </td>
+              }
+              @if (colV('open', 'usedMargin')) { <td class="col-used-margin right">{{ formatSocketUsedMargin(position)
+                }}</td> }
+              @if (colV('open', 'openPrice')) { <td class="col-open-price right">{{ position.entry_price |
+                number:'1.2-4' }}</td> }
+              @if (colV('open', 'sl')) {
+              <td class="col-sl right">
+                @if (isEditing(position, 'sl')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingValue" (keyup.enter)="saveEdit(position)"
+                    (keyup.escape)="cancelEdit()" class="edit-input" [class.edit-input-error]="editingError" />
+                  <button class="save-btn" (click)="saveEdit(position)" title="Save" [disabled]="!!editingError"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEdit()" title="Cancel"><i
+                      class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="editingError">{{ editingError }}</div>
+                } @else {
+                <span>{{ (position.stop_loss | number:'1.2-4') }}</span>
+                <button class="edit-icon-btn" (click)="startEdit(position, 'sl')" title="Edit Stop Loss"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+                }
+              </td>
+              }
+              @if (colV('open', 'tp')) {
+              <td class="col-tp right">
+                @if (isEditing(position, 'tp')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingValue" (keyup.enter)="saveEdit(position)"
+                    (keyup.escape)="cancelEdit()" class="edit-input" [class.edit-input-error]="editingError" />
+                  <button class="save-btn" (click)="saveEdit(position)" title="Save" [disabled]="!!editingError"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEdit()" title="Cancel"><i
+                      class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="editingError">{{ editingError }}</div>
+                } @else {
+                <span>{{ (position.take_profit | number:'1.2-4') }}</span>
+                <button class="edit-icon-btn" (click)="startEdit(position, 'tp')" title="Edit Take Profit"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+                }
+              </td>
+              }
+              @if (colV('open', 'currentPrice')) { <td class="col-close-price right">{{ (position.current_price ||
+                position.entry_price) | number:'1.2-4' }}</td> }
+              @if (colV('open', 'profit')) {
+              <td class="col-profit right" [ngClass]="getProfitLossClass(position)">
+                <span class="pl-value">
+                  {{ calculateProfitLoss(position) | brandCurrency:getQuoteCurrency(position.market) }}
+                </span>
+              </td>
+              }
+              @if (colV('open', 'close')) {
+              <td class="col-actions right">
+                <button class="pc-close-btn" (click)="closePosition(position)" title="Close Position">
+                  CLOSE
+                </button>
+              </td>
+              }
+            </tr>
+            <!-- @if(positions.length>0){
+              <tr class="total-txt-row">
+                <td class="col-symbol">TOTAL :</td>
+                <td class="col-ticket"></td>
+                <td class="col-time"></td>
+                <td class="col-type"></td>
+                <td class="col-volume right"></td>
+                <td class="col-used-margin right"></td>
+                <td class="col-open-price right"></td>
+                <td class="col-sl right"></td>
+                <td class="col-tp right"></td>
+                <td class="col-close-price right"></td>
+                <td class="col-profit right total-amt" [ngClass]="getPlTotalClass(openPositionsTotalPnl)">
+                  <span class="pl-value">{{ formatWithBrandCurrency(openPositionsTotalPnl) }}</span>
+                </td>
+                <td class="col-actions right"></td>
+              </tr>
+            } -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pending Orders Table -->
+      <div class="positions-table-wrapper" *ngIf="activeTab==='pending'">
+        <table class="positions-table" *ngIf="pendingOrders.length > 0; else noPending"
+          [ngStyle]="getTableColStyle('pending')">
+          <thead>
+            <tr>
+              @if (colV('pending', 'symbol')) { <th class="col-symbol" data-col-id="symbol"><span
+                  class="col-hdr-label">Symbol</span>@if (isDesktopTradeLayout && !isColProtected('symbol')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('pending', 'symbol', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+              @if (colV('pending', 'ticket')) { <th class="col-ticket" data-col-id="ticket"><span
+                  class="col-hdr-label">ID</span>@if (isDesktopTradeLayout && !isColProtected('ticket')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('pending', 'ticket', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+              @if (colV('pending', 'time')) { <th class="col-time" data-col-id="time"><span
+                  class="col-hdr-label">Time</span>@if (isDesktopTradeLayout && !isColProtected('time')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('pending', 'time', $event)" title="Hide column"
+                  aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if (isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'type')) { <th class="col-type" data-col-id="type"><span
+                  class="col-hdr-label">Type</span>@if (isDesktopTradeLayout && !isColProtected('type')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('pending', 'type', $event)" title="Hide column"
+                  aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if (isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'volume')) { <th class="col-volume right" data-col-id="volume"><span
+                  class="col-hdr-label">Volume</span>@if (isDesktopTradeLayout && !isColProtected('volume')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('pending', 'volume', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+              @if (colV('pending', 'usedMargin')) { <th class="col-used-margin right" data-col-id="usedMargin"><span
+                  class="col-hdr-label">Used margin</span>@if (isDesktopTradeLayout && !isColProtected('usedMargin')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'usedMargin', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'stopPrice')) { <th class="col-open-price right" data-col-id="stopPrice"><span
+                  class="col-hdr-label">Stop Price</span>@if (isDesktopTradeLayout && !isColProtected('stopPrice')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'stopPrice', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'limitPrice')) { <th class="col-open-price right" data-col-id="limitPrice"><span
+                  class="col-hdr-label">Limit Price</span>@if (isDesktopTradeLayout && !isColProtected('limitPrice')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'limitPrice', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'sl')) { <th class="col-sl right" data-col-id="sl"><span class="col-hdr-label">S /
+                  L</span>@if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+              @if (colV('pending', 'tp')) { <th class="col-tp right" data-col-id="tp"><span class="col-hdr-label">T /
+                  P</span>@if (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+              @if (colV('pending', 'currentPrice')) { <th class="col-close-price right" data-col-id="currentPrice"><span
+                  class="col-hdr-label">Current Price</span>@if (isDesktopTradeLayout &&
+                !isColProtected('currentPrice')) { <button type="button" class="col-hide-btn"
+                  (click)="hideColumn('pending', 'currentPrice', $event)" title="Hide column"
+                  aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if (isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'distance')) { <th class="col-close-price left" data-col-id="distance"><span
+                  class="col-hdr-label">Distance</span>@if (isDesktopTradeLayout && !isColProtected('distance')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'distance', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'expiration')) { <th class="col-expiration right" data-col-id="expiration"><span
+                  class="col-hdr-label">Expiration</span>@if (isDesktopTradeLayout && !isColProtected('expiration')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'expiration', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'remaining')) { <th class="col-remaining right" data-col-id="remaining"><span
+                  class="col-hdr-label">Remaining</span>@if (isDesktopTradeLayout && !isColProtected('remaining')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('pending', 'remaining', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }
+              </th> }
+              @if (colV('pending', 'close')) { <th class="col-actions right" data-col-id="close">@if
+                (isDesktopTradeLayout) { <span class="col-resizer"
+                  (pointerdown)="startResize($event, 'pending')"></span> }</th> }
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of pendingOrders">
+              @if (colV('pending', 'symbol')) { <td class="col-symbol">{{ order.symbol || order.market }}</td> }
+              @if (colV('pending', 'ticket')) { <td class="col-ticket">{{ order.id || order.order_id }}</td> }
+              @if (colV('pending', 'time')) { <td class="col-time">{{ formatTime(order.created_at) }}</td> }
+              @if (colV('pending', 'type')) {
+              <td class="col-type">
+                <span class="type-pill" [ngClass]="getPendingOrderTypeClass(order.order_type_id)">
+                  {{ getPendingOrderTypeLabel(order.order_type_id) | lowercase }}
+                </span>
+              </td>
+              }
+              @if (colV('pending', 'volume')) { <td class="col-volume right">{{ order.quantity | number:'1.2-4' }}</td>
+              }
+              @if (colV('pending', 'usedMargin')) { <td class="col-used-margin right">{{ formatSocketUsedMargin(order)
+                }}</td> }
+              @if (colV('pending', 'stopPrice')) {
+              <td class="col-open-price right">
+                @if ([2,3].includes(order.order_type_id)) {
+                <!-- BUY/SELL LIMIT: stop price not applicable -->
+                <span>�</span>
+                } @else if (isEditingOrder(order, 'stop_price')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingOrderValue" (keyup.enter)="saveEditOrder(order)"
+                    (keyup.escape)="cancelEditOrder()" class="edit-input"
+                    [class.edit-input-error]="!!getEditOrderError(order)" />
+                  <button class="save-btn" (click)="saveEditOrder(order)" [disabled]="!!getEditOrderError(order)"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEditOrder()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="getEditOrderError(order)">{{ getEditOrderError(order) }}</div>
+                } @else {
+                <span>{{ (order.stop_price || order.price || 0) | number:'1.2-4' }}</span>
+                <button class="edit-icon-btn" (click)="startEditOrder(order, 'stop_price')" title="Edit Stop Price">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                }
+              </td>
+              }
+              @if (colV('pending', 'limitPrice')) {
+              <td class="col-open-price right">
+                @if ([4,5].includes(order.order_type_id)) {
+                <!-- BUY/SELL STOP: limit price not applicable -->
+                <span>�</span>
+                } @else if (isEditingOrder(order, 'limit_price')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingOrderValue" (keyup.enter)="saveEditOrder(order)"
+                    (keyup.escape)="cancelEditOrder()" class="edit-input"
+                    [class.edit-input-error]="!!getEditOrderError(order)" />
+                  <button class="save-btn" (click)="saveEditOrder(order)" [disabled]="!!getEditOrderError(order)"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEditOrder()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="getEditOrderError(order)">{{ getEditOrderError(order) }}</div>
+                } @else {
+                <span>{{ order.limit_price ? (order.limit_price | number:'1.2-4') : '�' }}</span>
+                <button class="edit-icon-btn" *ngIf="order.limit_price || [2,3,6,7].includes(order.order_type_id)"
+                  (click)="startEditOrder(order, 'limit_price')" title="Edit Limit Price">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                }
+              </td>
+              }
+              @if (colV('pending', 'sl')) {
+              <td class="col-sl right">
+                @if (isEditingOrder(order, 'stop_loss')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingOrderValue" (keyup.enter)="saveEditOrder(order)"
+                    (keyup.escape)="cancelEditOrder()" class="edit-input"
+                    [class.edit-input-error]="!!getEditOrderError(order)" />
+                  <button class="save-btn" (click)="saveEditOrder(order)" [disabled]="!!getEditOrderError(order)"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEditOrder()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="getEditOrderError(order)">{{ getEditOrderError(order) }}</div>
+                } @else {
+                <span>{{ order.stop_loss ? (order.stop_loss | number:'1.2-4') : '' }}</span>
+                <button class="edit-icon-btn" (click)="startEditOrder(order, 'stop_loss')" title="Edit Stop Loss"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+                }
+              </td>
+              }
+              @if (colV('pending', 'tp')) {
+              <td class="col-tp right">
+                @if (isEditingOrder(order, 'take_profit')) {
+                <div class="edit-input-wrapper">
+                  <input type="number" [(ngModel)]="editingOrderValue" (keyup.enter)="saveEditOrder(order)"
+                    (keyup.escape)="cancelEditOrder()" class="edit-input"
+                    [class.edit-input-error]="!!getEditOrderError(order)" />
+                  <button class="save-btn" (click)="saveEditOrder(order)" [disabled]="!!getEditOrderError(order)"><i
+                      class="fa-solid fa-check"></i></button>
+                  <button class="cancel-btn" (click)="cancelEditOrder()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="edit-error-msg" *ngIf="getEditOrderError(order)">{{ getEditOrderError(order) }}</div>
+                } @else {
+                <span>{{ order.take_profit ? (order.take_profit | number:'1.2-4') : '' }}</span>
+                <button class="edit-icon-btn" (click)="startEditOrder(order, 'take_profit')" title="Edit Take Profit"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+                }
+              </td>
+              }
+              @if (colV('pending', 'currentPrice')) {
+              <td class="col-close-price right">
+                {{ getPendingCurrentPrice(order) > 0 ? (getPendingCurrentPrice(order) | number:'1.2-4') : '�' }}
+              </td>
+              }
+              @if (colV('pending', 'distance')) {
+              <td class="col-close-price right">
+                <span *ngIf="getPendingDistance(order) > 0" class="pending-distance">
+                  <i class="fa-solid"
+                    [ngClass]="getPendingDirection(order) === 'up' ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                  {{ getPendingDistance(order) | number:'1.2-4' }}
+                  <span class="pending-dist-pct">({{ getPendingDistancePct(order) | number:'1.2-2' }}%)</span>
+                </span>
+                <span *ngIf="getPendingDistance(order) === 0">�</span>
+              </td>
+              }
+              @if (colV('pending', 'expiration')) {
+              <td class="col-expiration right" [ngClass]="{'isediting': isEditingOrder(order, 'expiration')}">
+                @if (isEditingOrder(order, 'expiration')) {
+                <div class="exp-edit-wrap">
+                  <select [(ngModel)]="editingOrderValue" class="edit-input exp-select"
+                    style="margin-top: 0 !important; height: 25px !important;min-height: 25px !important;max-height: 25px !important;">
+                    @for (exp of EXPIRATION_TYPES; track exp) {
+                    <option [value]="exp">{{ exp }}</option>
+                    }
+                  </select>
+                  <input *ngIf="editingOrderValue === 'Custom Date'"
+                    style="height: 25px !important;min-height: 25px !important;max-height: 25px !important;" type="date"
+                    [(ngModel)]="editingOrderExpirationDate" class="edit-input exp-date-input" />
+                  <input *ngIf="editingOrderValue === 'Custom DateTime'"
+                    style="height: 25px !important;min-height: 25px !important;max-height: 25px !important;"
+                    type="datetime-local" [(ngModel)]="editingOrderExpirationDate" class="edit-input exp-date-input" />
+                  <div class="exp-action-row">
+                    <button type="button" class="exp-save-btn" (click)="saveEditOrder(order)" title="Save"
+                      aria-label="Save">
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="exp-cancel-btn" (click)="cancelEditOrder()" title="Cancel"
+                      aria-label="Cancel">
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+                } @else {
+                <span class="exp-display">{{ formatExpiration(order) }}</span>
+                <button class="edit-icon-btn" (click)="startEditOrder(order, 'expiration')"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+                }
+              </td>
+              }
+              @if (colV('pending', 'remaining')) {
+              <td class="col-remaining right">
+                <span class="exp-countdown" [class.exp-countdown-expired]="getExpirationCountdown(order) === 'Expired'"
+                  [class.exp-countdown-gtc]="getExpirationCountdown(order) === '8'">
+                  {{ getExpirationCountdown(order) }}
+                </span>
+              </td>
+              }
+              @if (colV('pending', 'close')) {
+              <td class="col-actions right">
+                <button class="pc-close-btn" (click)="cancelPendingOrder(order)" title="Cancel Order">
+                  CLOSE
+                </button>
+              </td>
+              }
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noPending>
+          <div class="ps-empty-state">
+            <span><i class="fa-regular fa-clock"></i></span>
+            <div class="ps-empty-title">No pending orders</div>
+            <div class="ps-empty-sub">Your limit &amp; stop orders will appear here.</div>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Order History Table -->
+      <div class="positions-table-wrapper" *ngIf="activeTab==='history'">
+        <table class="positions-table" [ngStyle]="getTableColStyle('history')">
+          <thead>
+            <tr>
+              @if (colV('history', 'symbol')) {
+              <th class="col-symbol" data-col-id="symbol"><span class="col-hdr-label">Symbol</span>
+                @if(isDesktopTradeLayout && !isColProtected('symbol')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'symbol', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th> }
+              @if (colV('history', 'ticket')) {
+              <th class="col-ticket" data-col-id="ticket">
+                <span class="col-hdr-label">Ticket</span>
+                @if(isDesktopTradeLayout && !isColProtected('ticket')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'ticket', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th> }
+              @if (colV('history', 'type')) { <th class="col-type" data-col-id="type"><span
+                  class="col-hdr-label">Type</span>@if (isDesktopTradeLayout && !isColProtected('type')) { <button
+                  type="button" class="col-hide-btn" (click)="hideColumn('history', 'type', $event)" title="Hide column"
+                  aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button> }@if (isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span> }
+              </th> }
+              @if (colV('history', 'volume')) {
+              <th class="col-volume right" data-col-id="volume"><span class="col-hdr-label">Volume</span>
+                @if(isDesktopTradeLayout && !isColProtected('volume')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'volume', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+              @if (colV('history', 'openPrice')) {
+              <th class="col-open-price right" data-col-id="openPrice"><span class="col-hdr-label">Open Price</span>
+                @if(isDesktopTradeLayout && !isColProtected('openPrice')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'openPrice', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+              @if (colV('history', 'close')) {
+              <th class="col-sl right" data-col-id="close"><span class="col-hdr-label">Close Price</span>
+                @if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+              @if (colV('history', 'opened')) {
+              <th class="col-tp right" data-col-id="opened"><span class="col-hdr-label">Opened</span>
+                @if(isDesktopTradeLayout && !isColProtected('opened')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'opened', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+              @if (colV('history', 'closed')) {
+              <th class="col-close-price right" data-col-id="closed"><span class="col-hdr-label">Closed</span>
+                @if(isDesktopTradeLayout && !isColProtected('closed')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'closed', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+              @if (colV('history', 'reason')) {
+              <th class="col-close-price right" data-col-id="reason"><span class="col-hdr-label">Reason</span>
+                @if(isDesktopTradeLayout && !isColProtected('reason')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'reason', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th> }
+              @if (colV('history', 'profit')) {
+              <th class="col-profit right" data-col-id="profit"><span class="col-hdr-label">P / L</span>
+                @if(isDesktopTradeLayout && !isColProtected('profit')) {
+                <button type="button" class="col-hide-btn" (click)="hideColumn('history', 'profit', $event)"
+                  title="Hide column" aria-label="Hide column"><i class="fa-solid fa-xmark"></i></button>
+                }@if(isDesktopTradeLayout) {
+                <span class="col-resizer" (pointerdown)="startResize($event, 'history')"></span>
+                }
+              </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of positionHistory; trackBy: trackByHistoryId">
+              @if (colV('history', 'symbol')) { <td class="col-symbol">{{ h.market }}</td> }
+              @if (colV('history', 'ticket')) { <td class="col-ticket">{{ h.position_id }}</td> }
+              @if (colV('history', 'type')) {
+              <td class="col-type">
+                <span class="type-pill" [ngClass]="getSideClass(h.position_type_id)">
+                  {{ getSideLabel(h.position_type_id) | lowercase }}
+                </span>
+              </td>
+              }
+              @if (colV('history', 'volume')) {
+              <td class="col-volume right">{{ h.quantity | number:'1.2-4' }}</td>
+              }
+              @if (colV('history', 'openPrice')) { <td class="col-open-price right">{{ h.entry_price | number:'1.2-4' }}
+              </td> }
+              @if (colV('history', 'close')) { <td class="col-sl right">{{ (h.exit_price || 0) | number:'1.2-4' }}</td>
+              }
+              @if (colV('history', 'opened')) { <td class="col-tp right">{{ formatTime(getHistoryOpenedAt(h)) }}</td> }
+              @if (colV('history', 'closed')) { <td class="col-close-price right">{{ formatTime(getHistoryClosedAt(h))
+                }}</td> }
+              @if (colV('history', 'reason')) { <td class="col-close-price right">{{ h.close_reason || '—' }}</td> }
+              @if (colV('history', 'profit')) {
+              <td class="col-profit right" [ngClass]="getHistoryPlClass(h)">
+                <span class="pl-value">
+                  {{ sharedService.formatToBrandCurrency(+h.realized_pl) }}
+                </span>
+              </td>
+              }
+            </tr>
+            <!-- @if (positionHistory.length > 0) {
+              <tr class="total-txt-row">
+                <td class="col-symbol">TOTAL :</td>
+                <td class="col-ticket"></td>
+                <td class="col-type"></td>
+                <td class="col-volume right"></td>
+                <td class="col-open-price right"></td>
+                <td class="col-sl right"></td>
+                <td class="col-tp right"></td>
+                <td class="col-close-price right"></td>
+                <td class="col-close-price right"></td>
+                <td class="col-profit right total-amt" [ngClass]="getPlTotalClass(historyTotalRealizedPl)">
+                  <span class="pl-value">{{ sharedService.formatToBrandCurrency(historyTotalRealizedPl) }}</span>
+                </td>
+              </tr>
+            } -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Desktop trade: tabs left, stats center, tab total right -->
+      <div class="positions-summary-bar positions-summary-bar--trade"
+        *ngIf="isDesktopTradeLayout; else tradeSummaryBarMobile">
+        <div class="ps-tabs ps-tabs--left">
+          <button type="button" class="ps-tab" [class.active]="activeTab==='positions'"
+            (click)="setActiveTab('positions')">
+            Positions
+            <span class="ps-count" *ngIf="positions.length">{{ positions.length }}</span>
+          </button>
+          <button type="button" class="ps-tab" [class.active]="activeTab==='pending'" (click)="setActiveTab('pending')">
+            Pending
+            <span class="ps-count" *ngIf="pendingOrders.length">{{ pendingOrders.length }}</span>
+          </button>
+          <button type="button" class="ps-tab" [class.active]="activeTab==='history'" (click)="setActiveTab('history')">
+            History
+            <span class="ps-count" *ngIf="positionHistory.length">{{ positionHistory.length }}</span>
+          </button>
+        </div>
+        <!-- <div class="positions-summary-bar-menus">
+          <span class="ps-item">Balance: {{ balance | number:'1.2-2' }}</span>
+          <span class="ps-item">Equity: {{ equity | number:'1.2-2' }}</span>
+          <span class="ps-item">Margin: {{ margin | number:'1.2-2' }}</span>
+          <span class="ps-item">Free margin: {{ freeMargin | number:'1.2-2' }}</span>
+          <span class="ps-item">Level: {{ marginLevel > 0 ? (marginLevel | number:'1.0-2') + '%' : '0' }}</span>
+        </div> -->
+        <div class="ps-bar-total-wrap">
+          <div class="ps-bar-total" [class.profit]="tradePanelSummaryUsesPlClass && tradePanelSummaryAmount > 0"
+            [class.loss]="tradePanelSummaryUsesPlClass && tradePanelSummaryAmount < 0">
+            <span class="ps-bar-total-label">{{ tradePanelSummaryLabel }}</span>
+            <span class="ps-bar-total-value">{{ tradePanelSummaryValue }}</span>
+          </div>
+          <div class="ps-column-picker" (click)="$event.stopPropagation()">
+            <button type="button" class="ps-columns-gear-btn" (click)="toggleColumnPicker($event)"
+              title="Customize columns" aria-label="Customize columns">
+              <i class="fa-solid fa-gear" aria-hidden="true"></i>
+            </button>
+            @if (showColumnPicker) {
+            <div class="ps-column-picker__panel">
+              <div class="ps-column-picker__title">Columns · {{ activeTab | titlecase }}</div>
+              @for (col of getTableColumns(activeTableKey); track col.id) {
+              <label class="ps-column-picker__row" [class.is-locked]="isColProtected(col.id)">
+                <input type="checkbox" [checked]="colV(activeTableKey, col.id)" [disabled]="isColProtected(col.id)"
+                  (change)="toggleColumnVisibility(activeTableKey, col.id, $event)" />
+                <span>{{ col.label || (col.id === 'close' ? 'Close' : col.id) }}</span>
+                @if (isColProtected(col.id)) {
+                <span class="ps-column-picker__lock" title="Required column">*</span>
+                }
+              </label>
+              }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+      <ng-template #tradeSummaryBarMobile>
+        <div class="positions-summary-bar">
+          <div class="positions-summary-bar-menus">
+            <span class="ps-item">Balance: {{ balance | number:'1.2-2' }}</span>
+            <span class="ps-item">Equity: {{ equity | number:'1.2-2' }}</span>
+            <span class="ps-item">Margin: {{ margin | number:'1.2-2' }}</span>
+            <span class="ps-item">Free margin: {{ freeMargin | number:'1.2-2' }}</span>
+            <span class="ps-item">Level: {{ marginLevel > 0 ? (marginLevel | number:'1.0-2') + '%' : '0' }}</span>
+          </div>
+          <div class="ps-tabs">
+            <button type="button" class="ps-tab" [class.active]="activeTab==='positions'"
+              (click)="setActiveTab('positions')">Positions</button>
+            <button type="button" class="ps-tab" [class.active]="activeTab==='pending'"
+              (click)="setActiveTab('pending')">Pending</button>
+            <button type="button" class="ps-tab" [class.active]="activeTab==='history'"
+              (click)="setActiveTab('history')">History</button>
+          </div>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="!isInsideTradePage">
+  <div class="main-positions-single-page">
+    <div class="positions-main">
+
+      <!-- ── MT5 Style Toolbar: same as wl-toolbar ── -->
+      <div class="wl-toolbar">
+        <div class="wl-view-tabs">
+          <button class="wl-view-tab" [class.active]="activeTab==='positions'"
+            (click)="setActiveTab('positions')">Positions</button>
+          <button class="wl-view-tab" [class.active]="activeTab==='pending'"
+            (click)="setActiveTab('pending')">Orders</button>
+          <button class="wl-view-tab" [class.active]="activeTab==='history'"
+            (click)="setActiveTab('history')">History</button>
+        </div>
+      </div>
+
+      <!-- ── MT5 Account Summary (dotted rows) ── -->
+      <div class="mt5-account-summary">
+        <div class="mt5-summary-row">
+          <span class="mt5-summary-key">Balance:</span>
+          <span class="mt5-summary-dots"></span>
+          <span class="mt5-summary-val">{{ balance | number:'1.2-2' }}</span>
+        </div>
+        <div class="mt5-summary-row">
+          <span class="mt5-summary-key">Equity:</span>
+          <span class="mt5-summary-dots"></span>
+          <span class="mt5-summary-val">{{ equity | number:'1.2-2' }}</span>
+        </div>
+        <div class="mt5-summary-row">
+          <span class="mt5-summary-key">Margin:</span>
+          <span class="mt5-summary-dots"></span>
+          <span class="mt5-summary-val">{{ margin | number:'1.2-2' }}</span>
+        </div>
+        <div class="mt5-summary-row">
+          <span class="mt5-summary-key">Free margin:</span>
+          <span class="mt5-summary-dots"></span>
+          <span class="mt5-summary-val">{{ freeMargin | number:'1.2-2' }}</span>
+        </div>
+        <div class="mt5-summary-row">
+          <span class="mt5-summary-key">Margin Level (%):</span>
+          <span class="mt5-summary-dots"></span>
+          <span class="mt5-summary-val">{{ marginLevel > 0 ? (marginLevel | number:'1.2-2') : '—' }}</span>
+        </div>
+      </div>
+
+      <!-- ── Content area ── -->
+      <div class="mt5-content">
+
+        <!-- POSITIONS tab -->
+        @if (activeTab === 'positions') {
+        <div class="mt5-section-header">Positions</div>
+        @if (!positions || positions.length === 0) {
+        <div class="ps-empty-state">
+          <i class="fa-regular fa-chart-bar"></i>
+          <div class="ps-empty-title">No open positions</div>
+          <div class="ps-empty-sub">Your active trades will appear here.</div>
+        </div>
+        } @else {
+        @for (position of positions; track position.position_id) {
+        <div class="mt5-position-row" (click)="openPositionDetail(position)">
+          <div class="mt5-pos-left">
+            <div class="mt5-pos-title">
+              <span class="mt5-pos-symbol">{{ position.market }}</span>
+              <span [ngClass]="position.type === 1 ? 'mt5-pos-side-buy' : 'mt5-pos-side-sell'">
+                {{ position.type === 1 ? 'buy' : 'sell' }} {{ position.quantity | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="mt5-pos-sub">
+              {{ position.entry_price | number:'1.2-5' }} <span><i class="fa-light fa-arrow-right"></i></span> {{
+              (position.current_price || position.entry_price) | number:'1.2-5' }}
+            </div>
+          </div>
+          <div class="mt5-pos-right">
+            <div class="mt5-pos-pl"
+              [ngClass]="calculateProfitLoss(position) > 0 ? 'positive' : calculateProfitLoss(position) < 0 ? 'negative' : 'neutral'">
+              {{ calculateProfitLoss(position) | number:'1.2-2' }}
+            </div>
+            <button type="button" class="mt5-pos-close-btn" title="Close position" aria-label="Close position"
+              (click)="closePosition(position); $event.stopPropagation()">
+              CLOSE
+            </button>
+          </div>
+        </div>
+        }
+        }
+        }
+
+        <!-- ORDERS (Pending) tab -->
+        @if (activeTab === 'pending') {
+        <div class="mt5-section-header">Orders</div>
+        @if (!pendingOrders || pendingOrders.length === 0) {
+        <div class="ps-empty-state">
+          <i class="fa-regular fa-clock"></i>
+          <div class="ps-empty-title">No pending orders</div>
+          <div class="ps-empty-sub">Your limit &amp; stop orders will appear here.</div>
+        </div>
+        } @else {
+        @for (order of pendingOrders; track (order.id || order.order_id)) {
+        <div class="mt5-position-row" (click)="openOrderDetail(order)">
+          <div class="mt5-pos-left">
+            <div class="mt5-pos-title">
+              <span class="mt5-pos-symbol">{{ order.symbol || order.market }}</span>
+              <span [ngClass]="[2,4,6].includes(order.order_type_id) ? 'mt5-pos-side-buy' : 'mt5-pos-side-sell'">
+                {{ getPendingOrderTypeLabel(order.order_type_id) | lowercase }}
+              </span>
+            </div>
+            <div class="mt5-pos-sub">
+              {{ order.quantity | number:'1.2-2' }} at {{ (order.limit_price || order.stop_price || order.price || 0) |
+              number:'1.2-5' }}
+            </div>
+          </div>
+          <div class="mt5-order-status">placed</div>
+        </div>
+        }
+        }
+        }
+
+        <!-- HISTORY tab -->
+        @if (activeTab === 'history') {
+        <div class="mt5-section-header">History</div>
+        @if (!positionHistory || positionHistory.length === 0) {
+        <div class="ps-empty-state">
+          <i class="fa-regular fa-rectangle-list"></i>
+          <div class="ps-empty-title">No history yet</div>
+          <div class="ps-empty-sub">Your closed trades will appear here.</div>
+        </div>
+        } @else {
+        @for (h of positionHistory; track h.position_id) {
+        <div class="mt5-position-row" (click)="openHistoryDetail(h)">
+          <div class="mt5-pos-left">
+            <div class="mt5-pos-title">
+              <span class="mt5-pos-symbol">{{ h.market }}</span>
+              <span [ngClass]="h.position_type_id === 1 ? 'mt5-pos-side-buy' : 'mt5-pos-side-sell'">
+                {{ getSideLabel(h.position_type_id) | lowercase }} {{ h.quantity | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="mt5-pos-sub">
+              {{ h.entry_price | number:'1.2-5' }} → {{ (h.exit_price || 0) | number:'1.2-5' }}
+            </div>
+          </div>
+          <div class="mt5-pos-pl"
+            [ngClass]="(h.realized_pl || 0) > 0 ? 'positive' : (h.realized_pl || 0) < 0 ? 'negative' : 'neutral'">
+            {{ (h.realized_pl || 0) | number:'1.2-2' }}
+          </div>
+        </div>
+        }
+        }
+        }
+
+      </div>
+
+      <!-- Sticky bottom: total P/L + close all (above app bottom nav; does not scroll) -->
+      <div class="positions-fixed-bottom-bar" *ngIf="activeTab === 'positions' || activeTab === 'history'">
+        <div class="pfb-left">
+          <span class="pfb-label">Total P/L</span>
+          <span class="pfb-value" [ngClass]="ordersPageBottomPnlClass">{{ ordersPageBottomPnlValue }}</span>
+        </div>
+        <div class="pfb-right" *ngIf="activeTab === 'positions'">
+          <button type="button" class="pfb-close-all-btn" (click)="closeAllPositions()"
+            [disabled]="!positions.length || closingAllPositions" title="Close all open positions">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            <span>{{ closingAllPositions ? 'Closing...' : 'Close All' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Position Detail Offcanvas ── -->
+    <ng-container *ngIf="showPositionOffcanvas && selectedPositionDetail">
+      <div class="pos-offcanvas-backdrop" [class.closing]="positionOffcanvasClosing" (click)="closePositionOffcanvas()">
+      </div>
+      <div class="pos-offcanvas" [class.open]="!positionOffcanvasClosing" [class.closing]="positionOffcanvasClosing">
+        <div class="pos-offcanvas-inner">
+
+          <!-- Header -->
+          <div class="poc-header">
+            <div class="poc-header-left">
+              <span class="poc-symbol">{{ selectedPositionDetail.market }}</span>
+              <span class="poc-side" [ngClass]="selectedPositionDetail.type === 1 ? 'buy' : 'sell'">
+                {{ selectedPositionDetail.type === 1 ? 'BUY' : 'SELL' }}
+              </span>
+            </div>
+            <button class="poc-close-btn" (click)="closePositionOffcanvas()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="poc-body">
+
+            <!-- Price row -->
+            <div class="poc-price-row">
+              <div class="poc-price-item">
+                <span class="poc-price-label">Entry Price</span>
+                <span class="poc-price-val">{{ selectedPositionDetail.entry_price | number:'1.2-5' }}</span>
+              </div>
+              <div class="poc-price-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="poc-price-item">
+                <span class="poc-price-label">Current Price</span>
+                <span class="poc-price-val">{{ (selectedPositionDetail.current_price ||
+                  selectedPositionDetail.entry_price) | number:'1.2-5' }}</span>
+              </div>
+            </div>
+
+            <!-- P&L -->
+            <div class="poc-pnl-row"
+              [ngClass]="calculateProfitLoss(selectedPositionDetail) > 0 ? 'positive' : calculateProfitLoss(selectedPositionDetail) < 0 ? 'negative' : 'neutral'">
+              <span class="poc-pnl-label">Unrealized P&amp;L</span>
+              <span class="poc-pnl-val">{{ calculateProfitLoss(selectedPositionDetail) | number:'1.2-2' }}</span>
+            </div>
+
+            <!-- Details: one row per field (not a 2×2 grid) -->
+            <div class="poc-details-stack">
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Volume</span>
+                <span class="poc-detail-val">{{ selectedPositionDetail.quantity | number:'1.2-4' }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Ticket</span>
+                <span class="poc-detail-val">#{{ selectedPositionDetail.position_id }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Opened</span>
+                <span class="poc-detail-val">{{ formatTime(selectedPositionDetail.opened_at) }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Leverage</span>
+                <span class="poc-detail-val">{{ selectedPositionDetail.leverage || '—' }}x</span>
+              </div>
+              @if (socketHasUsedMargin(selectedPositionDetail)) {
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Used margin</span>
+                <span class="poc-detail-val">{{ formatSocketUsedMargin(selectedPositionDetail) }}</span>
+              </div>
+              }
+            </div>
+
+            <!-- SL / TP editable — separate cards -->
+            <div class="poc-sltp-stack">
+              <!-- Stop Loss -->
+              <div class="poc-sltp-card">
+                <span class="poc-sltp-label">Stop Loss</span>
+                @if (isEditing(selectedPositionDetail, 'sl')) {
+                <div class="poc-edit-wrap">
+                  <input type="number" [(ngModel)]="editingValue" (keyup.enter)="saveEdit(selectedPositionDetail)"
+                    (keyup.escape)="cancelEdit()" class="poc-edit-input" [class.poc-edit-error]="!!editingError"
+                    placeholder="0.00" />
+                  <button class="poc-save-btn" (click)="saveEdit(selectedPositionDetail)" [disabled]="!!editingError">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                  <button class="poc-cancel-btn" (click)="cancelEdit()">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+                @if (editingError) {
+                <div class="poc-edit-error-msg">{{ editingError }}</div>
+                }
+                } @else {
+                <div class="poc-sltp-val-row">
+                  <span class="poc-sltp-val">{{ selectedPositionDetail.stop_loss ? (selectedPositionDetail.stop_loss |
+                    number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEdit(selectedPositionDetail, 'sl')">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+                }
+              </div>
+
+              <!-- Take Profit -->
+              <div class="poc-sltp-card">
+                <span class="poc-sltp-label">Take Profit</span>
+                @if (isEditing(selectedPositionDetail, 'tp')) {
+                <div class="poc-edit-wrap">
+                  <input type="number" [(ngModel)]="editingValue" (keyup.enter)="saveEdit(selectedPositionDetail)"
+                    (keyup.escape)="cancelEdit()" class="poc-edit-input" [class.poc-edit-error]="!!editingError"
+                    placeholder="0.00" />
+                  <button class="poc-save-btn" (click)="saveEdit(selectedPositionDetail)" [disabled]="!!editingError">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                  <button class="poc-cancel-btn" (click)="cancelEdit()">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+                @if (editingError) {
+                <div class="poc-edit-error-msg">{{ editingError }}</div>
+                }
+                } @else {
+                <div class="poc-sltp-val-row">
+                  <span class="poc-sltp-val">{{ selectedPositionDetail.take_profit ? (selectedPositionDetail.take_profit
+                    | number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEdit(selectedPositionDetail, 'tp')">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+                }
+              </div>
+            </div>
+
+          </div><!-- /poc-body -->
+
+          <!-- Footer: Close Position button -->
+          <div class="poc-footer">
+            <button class="poc-close-position-btn" (click)="closePositionFromOffcanvas()">
+              <i class="fa-solid fa-xmark"></i> Close Position
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Pending Order Detail Offcanvas ── -->
+    <ng-container *ngIf="showOrderOffcanvas && selectedOrderDetail">
+      <div class="pos-offcanvas-backdrop" [class.closing]="orderOffcanvasClosing" (click)="closeOrderOffcanvas()"></div>
+      <div class="pos-offcanvas" [class.open]="!orderOffcanvasClosing" [class.closing]="orderOffcanvasClosing">
+        <div class="pos-offcanvas-inner">
+
+          <!-- Header -->
+          <div class="poc-header">
+            <div class="poc-header-left">
+              <span class="poc-symbol">{{ selectedOrderDetail.symbol || selectedOrderDetail.market }}</span>
+              <span class="poc-side" [ngClass]="[2,4,6].includes(selectedOrderDetail.order_type_id) ? 'buy' : 'sell'">
+                {{ getPendingOrderTypeLabel(selectedOrderDetail.order_type_id) }}
+              </span>
+            </div>
+            <button class="poc-close-btn" (click)="closeOrderOffcanvas()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Body — scrollable -->
+          <div class="poc-body">
+
+            <!-- Info rows: compact key-value list -->
+            <div class="poc-info-list">
+
+              <!-- Order ID -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Order ID</span>
+                <span class="poc-info-val">#{{ selectedOrderDetail.id || selectedOrderDetail.order_id }}</span>
+              </div>
+
+              <!-- Type -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Type</span>
+                <span class="poc-info-val"
+                  [ngClass]="[2,4,6].includes(selectedOrderDetail.order_type_id) ? 'poc-val-buy' : 'poc-val-sell'">
+                  {{ getPendingOrderTypeLabel(selectedOrderDetail.order_type_id) }}
+                </span>
+              </div>
+
+              <!-- Volume -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Volume</span>
+                <span class="poc-info-val">{{ selectedOrderDetail.quantity | number:'1.2-4' }}</span>
+              </div>
+
+              @if (socketHasUsedMargin(selectedOrderDetail)) {
+              <div class="poc-info-row">
+                <span class="poc-info-key">Used margin</span>
+                <span class="poc-info-val">{{ formatSocketUsedMargin(selectedOrderDetail) }}</span>
+              </div>
+              }
+
+              <!-- Stop Price (for stop / stop-limit orders) -->
+              <div class="poc-info-row" *ngIf="![2,3].includes(selectedOrderDetail.order_type_id)">
+                <span class="poc-info-key">Stop Price</span>
+                <div class="poc-info-edit-cell">
+                  @if (isEditingOrder(selectedOrderDetail, 'stop_price')) {
+                  <div class="poc-edit-wrap">
+                    <input type="number" [(ngModel)]="editingOrderValue"
+                      (keyup.enter)="saveEditOrder(selectedOrderDetail)" (keyup.escape)="cancelEditOrder()"
+                      class="poc-edit-input" [class.poc-edit-error]="!!getEditOrderError(selectedOrderDetail)"
+                      placeholder="0.00" />
+                    <button class="poc-save-btn" (click)="saveEditOrder(selectedOrderDetail)"
+                      [disabled]="!!getEditOrderError(selectedOrderDetail)"><i class="fa-solid fa-check"></i></button>
+                    <button class="poc-cancel-btn" (click)="cancelEditOrder()"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <div class="poc-edit-error-msg" *ngIf="getEditOrderError(selectedOrderDetail)">{{
+                    getEditOrderError(selectedOrderDetail) }}</div>
+                  } @else {
+                  <span class="poc-info-val">{{ (selectedOrderDetail.stop_price || selectedOrderDetail.price) ?
+                    ((selectedOrderDetail.stop_price || selectedOrderDetail.price) | number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEditOrder(selectedOrderDetail, 'stop_price')"><i
+                      class="fa-solid fa-pen-to-square"></i></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Limit Price (for limit / stop-limit orders) -->
+              <div class="poc-info-row" *ngIf="[2,3,6,7].includes(selectedOrderDetail.order_type_id)">
+                <span class="poc-info-key">Limit Price</span>
+                <div class="poc-info-edit-cell">
+                  @if (isEditingOrder(selectedOrderDetail, 'limit_price')) {
+                  <div class="poc-edit-wrap">
+                    <input type="number" [(ngModel)]="editingOrderValue"
+                      (keyup.enter)="saveEditOrder(selectedOrderDetail)" (keyup.escape)="cancelEditOrder()"
+                      class="poc-edit-input" [class.poc-edit-error]="!!getEditOrderError(selectedOrderDetail)"
+                      placeholder="0.00" />
+                    <button class="poc-save-btn" (click)="saveEditOrder(selectedOrderDetail)"
+                      [disabled]="!!getEditOrderError(selectedOrderDetail)"><i class="fa-solid fa-check"></i></button>
+                    <button class="poc-cancel-btn" (click)="cancelEditOrder()"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <div class="poc-edit-error-msg" *ngIf="getEditOrderError(selectedOrderDetail)">{{
+                    getEditOrderError(selectedOrderDetail) }}</div>
+                  } @else {
+                  <span class="poc-info-val">{{ selectedOrderDetail.limit_price ? (selectedOrderDetail.limit_price |
+                    number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEditOrder(selectedOrderDetail, 'limit_price')"><i
+                      class="fa-solid fa-pen-to-square"></i></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Current Price -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Current Price</span>
+                <span class="poc-info-val">{{ getPendingCurrentPrice(selectedOrderDetail) > 0 ?
+                  (getPendingCurrentPrice(selectedOrderDetail) | number:'1.2-5') : '—' }}</span>
+              </div>
+
+              <!-- Distance -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Distance</span>
+                <span class="poc-info-val">
+                  @if (getPendingDistance(selectedOrderDetail) > 0) {
+                  <i class="fa-solid"
+                    [ngClass]="getPendingDirection(selectedOrderDetail) === 'up' ? 'fa-arrow-up poc-dist-up' : 'fa-arrow-down poc-dist-down'"></i>
+                  {{ getPendingDistance(selectedOrderDetail) | number:'1.2-4' }}
+                  ({{ getPendingDistancePct(selectedOrderDetail) | number:'1.2-2' }}%)
+                  } @else { — }
+                </span>
+              </div>
+
+              <!-- Stop Loss -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Stop Loss</span>
+                <div class="poc-info-edit-cell">
+                  @if (isEditingOrder(selectedOrderDetail, 'stop_loss')) {
+                  <div class="poc-edit-wrap">
+                    <input type="number" [(ngModel)]="editingOrderValue"
+                      (keyup.enter)="saveEditOrder(selectedOrderDetail)" (keyup.escape)="cancelEditOrder()"
+                      class="poc-edit-input" [class.poc-edit-error]="!!getEditOrderError(selectedOrderDetail)"
+                      placeholder="0.00" />
+                    <button class="poc-save-btn" (click)="saveEditOrder(selectedOrderDetail)"
+                      [disabled]="!!getEditOrderError(selectedOrderDetail)"><i class="fa-solid fa-check"></i></button>
+                    <button class="poc-cancel-btn" (click)="cancelEditOrder()"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <div class="poc-edit-error-msg" *ngIf="getEditOrderError(selectedOrderDetail)">{{
+                    getEditOrderError(selectedOrderDetail) }}</div>
+                  } @else {
+                  <span class="poc-info-val">{{ selectedOrderDetail.stop_loss ? (selectedOrderDetail.stop_loss |
+                    number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEditOrder(selectedOrderDetail, 'stop_loss')"><i
+                      class="fa-solid fa-pen-to-square"></i></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Take Profit -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Take Profit</span>
+                <div class="poc-info-edit-cell">
+                  @if (isEditingOrder(selectedOrderDetail, 'take_profit')) {
+                  <div class="poc-edit-wrap">
+                    <input type="number" [(ngModel)]="editingOrderValue"
+                      (keyup.enter)="saveEditOrder(selectedOrderDetail)" (keyup.escape)="cancelEditOrder()"
+                      class="poc-edit-input" [class.poc-edit-error]="!!getEditOrderError(selectedOrderDetail)"
+                      placeholder="0.00" />
+                    <button class="poc-save-btn" (click)="saveEditOrder(selectedOrderDetail)"
+                      [disabled]="!!getEditOrderError(selectedOrderDetail)"><i class="fa-solid fa-check"></i></button>
+                    <button class="poc-cancel-btn" (click)="cancelEditOrder()"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <div class="poc-edit-error-msg" *ngIf="getEditOrderError(selectedOrderDetail)">{{
+                    getEditOrderError(selectedOrderDetail) }}</div>
+                  } @else {
+                  <span class="poc-info-val">{{ selectedOrderDetail.take_profit ? (selectedOrderDetail.take_profit |
+                    number:'1.2-5') : '—' }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEditOrder(selectedOrderDetail, 'take_profit')"><i
+                      class="fa-solid fa-pen-to-square"></i></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Placed -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Placed</span>
+                <span class="poc-info-val">{{ formatTime(selectedOrderDetail.created_at) }}</span>
+              </div>
+
+              <!-- Expiration -->
+              <div class="poc-info-row" [class.poc-info-row-col]="isEditingOrder(selectedOrderDetail, 'expiration')">
+                <span class="poc-info-key">Expiration</span>
+                <div class="poc-info-edit-cell">
+                  @if (isEditingOrder(selectedOrderDetail, 'expiration')) {
+                  <div class="poc-exp-edit-wrap">
+                    <select [(ngModel)]="editingOrderValue" class="poc-edit-input poc-exp-select">
+                      @for (exp of EXPIRATION_TYPES; track exp) {
+                      <option [value]="exp">{{ exp }}</option>
+                      }
+                    </select>
+                    @if (editingOrderValue === 'Custom Date') {
+                    <input type="date" [(ngModel)]="editingOrderExpirationDate" class="poc-edit-input" />
+                    }
+                    @if (editingOrderValue === 'Custom DateTime') {
+                    <input type="datetime-local" [(ngModel)]="editingOrderExpirationDate" class="poc-edit-input" />
+                    }
+                    <div class="poc-exp-actions">
+                      <button type="button" class="poc-save-btn" (click)="saveEditOrder(selectedOrderDetail)"
+                        title="Save" aria-label="Save">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                      </button>
+                      <button type="button" class="poc-cancel-btn" (click)="cancelEditOrder()" title="Cancel"
+                        aria-label="Cancel">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                  </div>
+                  } @else {
+                  <span class="poc-info-val">{{ formatExpiration(selectedOrderDetail) }}</span>
+                  <button class="poc-edit-icon-btn" (click)="startEditOrder(selectedOrderDetail, 'expiration')"><i
+                      class="fa-solid fa-pen-to-square"></i></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Remaining -->
+              <div class="poc-info-row">
+                <span class="poc-info-key">Remaining</span>
+                <span class="poc-info-val">{{ getExpirationCountdown(selectedOrderDetail) }}</span>
+              </div>
+
+            </div><!-- /poc-info-list -->
+
+          </div><!-- /poc-body -->
+
+          <!-- Footer: Cancel Order button -->
+          <div class="poc-footer">
+            <button class="poc-close-position-btn" (click)="cancelOrderFromOffcanvas()">
+              <i class="fa-solid fa-ban"></i> Cancel Order
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── History Detail Offcanvas ── -->
+    <ng-container *ngIf="showHistoryOffcanvas && selectedHistoryDetail">
+      <div class="pos-offcanvas-backdrop" [class.closing]="historyOffcanvasClosing" (click)="closeHistoryOffcanvas()">
+      </div>
+      <div class="pos-offcanvas" [class.open]="!historyOffcanvasClosing" [class.closing]="historyOffcanvasClosing">
+        <div class="pos-offcanvas-inner">
+
+          <!-- Header -->
+          <div class="poc-header">
+            <div class="poc-header-left">
+              <span class="poc-symbol">{{ selectedHistoryDetail.market }}</span>
+              <span class="poc-side" [ngClass]="selectedHistoryDetail.position_type_id === 1 ? 'buy' : 'sell'">
+                {{ getSideLabel(selectedHistoryDetail.position_type_id) }}
+              </span>
+            </div>
+            <button class="poc-close-btn" (click)="closeHistoryOffcanvas()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="poc-body">
+
+            <!-- Price row: entry → exit -->
+            <div class="poc-price-row">
+              <div class="poc-price-item">
+                <span class="poc-price-label">Entry Price</span>
+                <span class="poc-price-val">{{ selectedHistoryDetail.entry_price | number:'1.2-5' }}</span>
+              </div>
+              <div class="poc-price-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="poc-price-item">
+                <span class="poc-price-label">Exit Price</span>
+                <span class="poc-price-val">{{ (selectedHistoryDetail.exit_price || 0) | number:'1.2-5' }}</span>
+              </div>
+            </div>
+
+            <!-- Realized P&L -->
+            <div class="poc-pnl-row"
+              [ngClass]="(selectedHistoryDetail.realized_pl || 0) > 0 ? 'positive' : (selectedHistoryDetail.realized_pl || 0) < 0 ? 'negative' : 'neutral'">
+              <span class="poc-pnl-label">Realized P&amp;L</span>
+              <span class="poc-pnl-val">{{ (selectedHistoryDetail.realized_pl || 0) | number:'1.2-2' }}</span>
+            </div>
+
+            <!-- Details: one row per field -->
+            <div class="poc-details-stack">
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Volume</span>
+                <span class="poc-detail-val">{{ selectedHistoryDetail.quantity | number:'1.2-4' }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Ticket</span>
+                <span class="poc-detail-val">#{{ selectedHistoryDetail.position_id }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Opened</span>
+                <span class="poc-detail-val">{{ formatTime(selectedHistoryDetail.opened_at) }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Closed</span>
+                <span class="poc-detail-val">{{ formatTime(selectedHistoryDetail.closed_at) }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Type</span>
+                <span class="poc-detail-val">{{ getSideLabel(selectedHistoryDetail.position_type_id) }}</span>
+              </div>
+              <div class="poc-detail-card">
+                <span class="poc-detail-label">Close Reason</span>
+                <span class="poc-detail-val">{{ selectedHistoryDetail.close_reason || '—' }}</span>
+              </div>
+            </div>
+
+          </div><!-- /poc-body -->
+
+          <!-- Footer: just close panel -->
+          <div class="poc-footer">
+            <button class="poc-dismiss-btn" (click)="closeHistoryOffcanvas()">
+              <i class="fa-solid fa-check"></i> Done
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</ng-container>

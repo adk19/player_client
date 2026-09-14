@@ -1,0 +1,118 @@
+<div class="selfie-cap">
+  <div class="selfie-sumsub-head" *ngIf="(status === 'live' || status === 'loading') && !pendingReview">
+    <div class="selfie-sumsub-meta">
+      <span class="selfie-sumsub-step">Step {{ rotationSatisfied ? '2' : '1' }} of 2</span>
+      <span class="selfie-sumsub-badge">Liveness</span>
+    </div>
+    <h3 class="selfie-sumsub-title">Selfie verification</h3>
+    <p class="selfie-sumsub-sub">
+      {{ rotationSatisfied ? 'Align your face in the frame and look straight at the camera.'
+      : 'Follow the instructions to continue.' }}
+    </p>
+  </div>
+
+  @if (statusMessage && !pendingReview) {
+  <div class="selfie-status" [class.selfie-status--ok]="faceOk && rotationSatisfied"
+    [class.selfie-status--progress]="rotationSatisfied && faceOk && autoCaptureProgress > 0 && autoCaptureProgress < 1 && !autoCaptureFired">
+    {{ statusMessage }}
+    @if (rotationSatisfied && faceOk && autoCaptureProgress > 0 && autoCaptureProgress < 1 && !autoCaptureFired) { <div
+      class="selfie-progress">
+      <div class="selfie-progress__bar" [style.width.%]="autoCaptureProgress * 100">
+      </div>
+  </div>
+  }
+</div>
+}
+
+@if (cameraError) {
+<div class="selfie-err">{{ cameraError }}</div>
+}
+@if (modelError) {
+<div class="selfie-err">{{ modelError }}</div>
+}
+
+@if (pendingReview) {
+<div class="selfie-review">
+  <div class="selfie-review__header">
+    <div class="selfie-review__icon" [class.selfie-review__icon--warn]="captureWarning" aria-hidden="true">
+      @if (!captureWarning) {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 9v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      }
+    </div>
+    <div class="selfie-review__headlines">
+      <h3 class="selfie-review__title">{{ captureWarning ? 'Review suggested' : 'Photo captured' }}</h3>
+      <p class="selfie-review__subtitle">
+        {{
+        captureWarning
+        ? 'You can retake for a clearer shot, or continue if you are happy with it.'
+        : 'Check that your face is visible and in focus before continuing.'
+        }}
+      </p>
+    </div>
+  </div>
+
+  @if (captureWarning) {
+  <div class="selfie-review__warn">{{ captureWarning }}</div>
+  }
+
+  @if (pendingPreviewUrl) {
+  <div class="selfie-review__frame">
+    <div class="selfie-review__phone">
+      <img [src]="pendingPreviewUrl" alt="Captured selfie preview" class="selfie-review__img">
+    </div>
+  </div>
+  }
+
+  <div class="selfie-review__actions">
+    <button type="button" class="btn btn-secondary btn--wide" (click)="retakeFromReview()">Retake photo</button>
+    <button type="button" class="btn btn-primary btn--wide" (click)="acceptPendingCapture()">Use this photo</button>
+  </div>
+</div>
+}
+
+@if ((status === 'live' || status === 'loading') && !pendingReview) {
+<div class="selfie-shell">
+  <div class="selfie-video-wrap">
+    <video #videoEl class="selfie-video" playsinline muted autoplay></video>
+    <div class="selfie-vignette" aria-hidden="true"></div>
+    <div class="selfie-oval-ring" [class.selfie-oval-ring--aligned]="frameAligned"
+      [class.selfie-oval-ring--pulse]="frameAligned && primedForCapture" aria-hidden="true"></div>
+    <div class="selfie-corner selfie-corner--tl" aria-hidden="true"></div>
+    <div class="selfie-corner selfie-corner--tr" aria-hidden="true"></div>
+    <div class="selfie-corner selfie-corner--bl" aria-hidden="true"></div>
+    <div class="selfie-corner selfie-corner--br" aria-hidden="true"></div>
+  </div>
+</div>
+}
+
+@if (!pendingReview) {
+<div class="selfie-actions">
+  @if (status === 'idle' || status === 'error') {
+  <button type="button" class="btn btn-primary" (click)="startCamera()">
+    {{ status === 'error' ? 'Try again' : 'Start verification' }}
+  </button>
+  }
+
+  @if (status === 'live') {
+  <button type="button" class="btn btn-secondary" (click)="stopCamera()">Cancel</button>
+  <button type="button" class="btn btn-primary"
+    [disabled]="!faceOk || !rotationSatisfied || autoCaptureFired || !primedForCapture" (click)="capturePhoto()">
+    Take photo
+  </button>
+  }
+</div>
+}
+
+@if (status === 'idle') {
+<p class="selfie-hint">
+  Identity-style selfie check: you will be asked to turn your head slightly, then hold still while the camera
+  captures automatically. Works best in good lighting, facing the screen.
+</p>
+}
+</div>

@@ -1,0 +1,187 @@
+<div class="orders-page">
+  <div class="orders-shell">
+
+    <!-- ── Page Header ── -->
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account</div>
+          <h1 class="page-title">Orders</h1>
+          <p class="page-subtitle">
+            Search by symbol, filter by date, and review your order history.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Filters ── -->
+    <div class="filters-bar">
+      <div class="filter-search">
+        <i class="fa-light fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search symbol…" [(ngModel)]="filterSymbol" (ngModelChange)="onSymbolChange()" />
+      </div>
+
+      <div class="filter-date-group">
+        <input type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" placeholder="From" />
+        <span class="date-sep">—</span>
+        <input type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" placeholder="To" />
+      </div>
+
+      <button class="btn-clear" *ngIf="hasFilters" (click)="clearFilters()">
+        <i class="fa-light fa-xmark"></i> Clear
+      </button>
+    </div>
+
+    <!-- ── Skeleton ── -->
+    @if(loading){
+    <div class="panel">
+      <div class="panel-header">
+        <div class="sk sk-label"></div>
+        <div class="sk sk-btn"></div>
+      </div>
+      <div class="sk-rows">
+        <div class="sk sk-row" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+      </div>
+    </div>
+    }
+
+    <!-- ── Error ── -->
+    @if(!loading && error){
+    <div class="orders-error">
+      <i class="fa-light fa-circle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+    }
+
+    <!-- ── Table ── -->
+    @if(!loading && !error){
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <i class="fa-light fa-list-check"></i>
+          <span>Orders</span>
+          <span class="count-badge">{{ total }}</span>
+        </div>
+      </div>
+
+      <div class="table-wrap orders-table-wrap">
+        <table class="orders-table" *ngIf="orders.length; else noOrders">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th class="right">Qty</th>
+              <th class="right">Entry</th>
+              <th class="right">Exit</th>
+              <th>Opened</th>
+              <th>Closed</th>
+              <th class="right">Net P/L</th>
+              <th class="right">Gross P/L</th>
+              <th>Close Reason</th>
+              <th>Trading</th>
+              <th class="right">Leverage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of orders">
+              <td><span class="sym">{{ o.symbol }}</span></td>
+              <td>
+                <span class="side-badge" [ngClass]="sideClass(o)">{{ sideLabel(o) }}</span>
+              </td>
+              <td><span class="type-badge">{{ orderTypeLabel(o) }}</span></td>
+              <td>
+                <span class="status-badge" [ngClass]="statusClass(o)">{{ statusLabel(o) }}</span>
+              </td>
+              <td class="right">{{ fmt(o.quantity, 4) }}</td>
+              <td class="right price-cell">{{ fmt(o.entry_price) }}</td>
+              <td class="right price-cell">{{ fmt(o.exit_price) }}</td>
+              <td class="date-cell">{{ fmtDate(o.opened_at) }}</td>
+              <td class="date-cell">{{ fmtDate(o.closed_at) }}</td>
+              <td class="right pl-cell" [ngClass]="plClass(o.net_pnl)">{{ brandFmt(o.net_pnl) }}</td>
+              <td class="right pl-cell" [ngClass]="plClass(o.gross_pnl)">{{ brandFmt(o.gross_pnl) }}</td>
+              <td><span class="reason-text">{{ closeReasonLabel(o.close_reason) }}</span></td>
+              <td><span class="type-badge">{{ enumLabel(o.trading_type) }}</span></td>
+              <td class="right">{{ o.leverage_ratio ? (o.leverage_ratio + 'x') : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noOrders>
+          <div class="no-data">
+            <i class="fa-light fa-inbox"></i>
+            <span>No orders found</span>
+            <span class="no-data-sub" *ngIf="hasFilters">Try clearing filters</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Pagination: left = per page, center = range/total, right = pages -->
+      <div class="pagination-bar" *ngIf="total > 0" [class.pagination-bar--one-page]="totalPages <= 1">
+        <div class="pagination-bar-left">
+          <label class="limit-lbl" for="ord-limit">Per page</label>
+          <select id="ord-limit" class="limit-select" [(ngModel)]="limit" (ngModelChange)="onLimitChange()">
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+            <option [ngValue]="100">100</option>
+          </select>
+        </div>
+
+        <div class="pagination-bar-center">
+          <span class="pg-range" aria-live="polite">
+            <span class="pg-range-nums"><strong>{{ offset + 1 }}</strong>–<strong>{{ minVal(offset + limit, total)
+                }}</strong></span>
+            <span class="pg-of">of</span>
+            <strong class="pg-total-count">{{ total }}</strong>
+            <span class="pg-total-label">orders</span>
+          </span>
+        </div>
+
+        <div class="pagination-bar-right">
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage <= 1" (click)="prevPage()"
+            aria-label="Previous page">
+            <i class="fa-light fa-chevron-left"></i>
+            <span class="pg-nav-txt">Prev</span>
+          </button>
+
+          @if(totalPages > 1){
+          <div class="pg-numbers" role="navigation" aria-label="Pages">
+            <ng-container *ngFor="let item of pageNumbersForView()">
+              <span *ngIf="item === 'ellipsis'" class="pg-ellipsis" aria-hidden="true">…</span>
+              @if(item !== 'ellipsis'){
+              <button type="button" class="pg-num" [class.pg-num--active]="item === currentPage"
+                [disabled]="item === currentPage" (click)="goToPage($any(item))">
+                {{ item }}
+              </button>
+              }
+            </ng-container>
+          </div>
+          }
+
+
+          <span class="pg-mobile-page" *ngIf="totalPages > 1">Page {{ currentPage }} / {{ totalPages }}</span>
+
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage >= totalPages" (click)="nextPage()"
+            aria-label="Next page">
+            <span class="pg-nav-txt">Next</span>
+            <i class="fa-light fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    }
+
+  </div>
+</div>

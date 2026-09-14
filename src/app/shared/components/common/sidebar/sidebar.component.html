@@ -1,0 +1,87 @@
+<div class="sidebar-ctx">
+    <div class="sidebar-top">
+        <div class="sidebar-top-btn">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </div>
+    </div>
+    <div class="sidebar-menus">
+        <div class="sidebar-menu-sng" [ngClass]="checkMenuActive('trade') ? 'active' : ''">
+            <div class="sidebar-menu-sng-icon"><i class="fa-solid fa-chart-area"></i></div>
+            <div class="sidebar-menu-sng-ttl">Trade</div>
+        </div>
+        <div class="sidebar-menu-sng">
+            <div class="sidebar-menu-sng-icon"><i class="fa-solid fa-comments"></i></div>
+            <div class="sidebar-menu-sng-ttl">Support</div>
+        </div>
+        <div class="sidebar-menu-sng">
+            <div class="sidebar-menu-sng-icon"><i class="fa-solid fa-user"></i></div>
+            <div class="sidebar-menu-sng-ttl">Account</div>
+        </div>
+        <div class="sidebar-menu-sng">
+            <div class="sidebar-menu-sng-icon"><i class="fa-solid fa-coins"></i></div>
+            <div class="sidebar-menu-sng-ttl">Markets</div>
+        </div>
+    </div>
+    <div class="sidebar-bottom">
+        <div class="sidebar-bottom-four-box">
+            <div class="sidebar-bottom-four-box-row">
+                <div class="sidebar-bottom-four-box-sng"
+                    (click)="sharedservice.isFullscreen ? sharedservice.exitFullscreen() : sharedservice.enterFullscreen()">
+                    @if(sharedservice.isFullscreen){
+                    <span><i class="fa-solid fa-compress"></i></span>
+                    }@else{
+                    <span><i class="fa-solid fa-expand"></i></span>
+                    }
+                </div>
+                <div class="sidebar-bottom-four-box-sng"
+                    (click)="sharedservice.switchMode(sharedservice.isDarkMode ? 'light' : 'dark')">
+                    @if(sharedservice.isDarkMode){
+                    <span><i class="fa-solid fa-moon"></i></span>
+                    }@else{
+                    <span><i class="fa-solid fa-sun"></i></span>
+                    }
+                </div>
+            </div>
+            <div class="sidebar-bottom-four-box-row">
+                <div class="sidebar-bottom-four-box-sng" routerLink="/settings">
+                    <span><i class="fa-solid fa-gear"></i></span>
+                </div>
+                <div class="sidebar-bottom-four-box-sng" (click)="sharedservice.isVolumeOn = !sharedservice.isVolumeOn">
+                    @if(sharedservice.isVolumeOn){
+                    <span><i class="fa-solid fa-volume"></i></span>
+                    }@else{
+                    <span><i class="fa-solid fa-volume-slash"></i></span>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-bottom-scl-box">
+            <div class="sidebar-bottom-scl-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M15.1667 8.37424C15.1667 7.19296 16.1244 6.23535 17.3056 6.23535H25.8612C27.0425 6.23535 28.0001 7.19296 28.0001 8.37424V16.9298C28.0001 18.1111 27.0425 19.0687 25.8612 19.0687H17.3056C16.1244 19.0687 15.1667 18.1111 15.1667 16.9298V8.37424Z"
+                        fill="white"></path>
+                    <path
+                        d="M21.5833 17.9991C24.5365 17.9991 26.9305 15.6051 26.9305 12.6519C26.9305 9.69872 24.5365 7.30469 21.5833 7.30469C18.6301 7.30469 16.2361 9.69872 16.2361 12.6519C16.2361 15.6051 18.6301 17.9991 21.5833 17.9991Z"
+                        fill="#026FD3"></path>
+                    <path
+                        d="M24.252 10.4402C24.2978 10.1326 24.0163 9.88973 23.753 10.0098L18.5091 12.4019C18.3203 12.488 18.3341 12.7852 18.5299 12.8499L19.6113 13.2077C19.8178 13.276 20.0412 13.2407 20.2215 13.1113L22.6596 11.3613C22.7331 11.3085 22.8133 11.4171 22.7505 11.4844L20.9954 13.3643C20.8252 13.5467 20.859 13.8557 21.0638 13.9891L23.0287 15.2693C23.2491 15.4129 23.5326 15.2687 23.5738 14.992L24.252 10.4402Z"
+                        fill="white"></path>
+                    <path
+                        d="M11.0834 2.73535H2.91675C1.95025 2.73535 1.16675 3.51885 1.16675 4.48535V12.652C1.16675 13.6185 1.95025 14.402 2.91675 14.402H11.0834C12.0499 14.402 12.8334 13.6185 12.8334 12.652V4.48535C12.8334 3.51885 12.0499 2.73535 11.0834 2.73535Z"
+                        fill="#026FD3"></path>
+                    <path
+                        d="M9.26953 10.255L9.5293 8.56885H7.91146V7.4751C7.91146 7.01481 8.13704 6.56364 8.86165 6.56364H9.59766V5.12809C9.59766 5.12809 8.93001 5.01416 8.29199 5.01416C6.95898 5.01416 6.08854 5.8208 6.08854 7.28369V8.56885H4.60742V10.255H6.08854V14.4022H7.91146V10.255H9.26953Z"
+                        fill="white"></path>
+                    <path
+                        d="M7 15.0688C7 13.412 8.34315 12.0688 10 12.0688H18C19.6569 12.0688 21 13.412 21 15.0688V23.0688C21 24.7257 19.6569 26.0688 18 26.0688H10C8.34315 26.0688 7 24.7257 7 23.0688V15.0688Z"
+                        fill="#F14D5B"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M12 14.0688H16C17.6569 14.0688 19 15.412 19 17.0688V21.0688C19 22.7257 17.6569 24.0688 16 24.0688H12C10.3431 24.0688 9 22.7257 9 21.0688V17.0688C9 15.412 10.3431 14.0688 12 14.0688ZM12 15.0688C10.8954 15.0688 10 15.9643 10 17.0688V21.0688C10 22.1734 10.8954 23.0688 12 23.0688H16C17.1046 23.0688 18 22.1734 18 21.0688V17.0688C18 15.9643 17.1046 15.0688 16 15.0688H12ZM14 21.5688C12.6193 21.5688 11.5 20.4496 11.5 19.0688C11.5 17.6881 12.6193 16.5688 14 16.5688C15.3807 16.5688 16.5 17.6881 16.5 19.0688C16.5 20.4496 15.3807 21.5688 14 21.5688ZM14 20.5688C14.8284 20.5688 15.5 19.8973 15.5 19.0688C15.5 18.2404 14.8284 17.5688 14 17.5688C13.1716 17.5688 12.5 18.2404 12.5 19.0688C12.5 19.8973 13.1716 20.5688 14 20.5688ZM16.5 17.0688C16.2239 17.0688 16 16.845 16 16.5688C16 16.2927 16.2239 16.0688 16.5 16.0688C16.7761 16.0688 17 16.2927 17 16.5688C17 16.845 16.7761 17.0688 16.5 17.0688Z"
+                        fill="white"></path>
+                </svg>
+            </div>
+            <div class="sidebar-bottom-scl-ttl">JOIN US</div>
+        </div>
+    </div>
+</div>

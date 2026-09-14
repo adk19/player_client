@@ -1,0 +1,170 @@
+@if(noticeBarVisible){
+<div class="notice-bar">
+    <marquee class="notice-text">Notice: This platform is for entertainment and learning purposes only. No real money is
+        used. All points and balances are virtual and have no monetary value.</marquee>
+    <button type="button" class="notice-bar-close" (click)="toggleNoticeBar($event)" aria-label="Close notice">
+        <i class="fa-light fa-xmark" aria-hidden="true"></i>
+    </button>
+</div>
+}
+<div class="main-header">
+    <div class="header-left">
+        <div class="header-logo">
+            @if(sharedservice.isDarkMode){
+            <img routerLink="/trade" [src]="sharedservice.brandDarkLogoUrl || 'assets/img/logo/white-logo.png'"
+                alt="full-logo-light" />
+            }@else{
+            <img routerLink="/trade" [src]="sharedservice.brandLogoUrl || 'assets/img/logo/black-logo.png'"
+                alt="full-logo-light" />
+            }
+        </div>
+    </div>
+    <div class="header-center">
+        <div class="header-nav">
+            <div class="header-nav-row">
+                <div class="header-nav-item" routerLink="/trade" [ngClass]="checkMenuActive('trade') ? 'active' : ''">
+                    <div class="header-nav-ico"><i class="fa-light fa-chart-area"></i></div>
+                    <div class="header-nav-txt">Trade</div>
+                </div>
+                <div class="header-nav-item" routerLink="/account"
+                    [ngClass]="checkMenuActive('account') ? 'active' : ''">
+                    <div class="header-nav-ico"><i class="fa-light fa-user"></i></div>
+                    <div class="header-nav-txt">Account</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-right">
+        <button type="button" class="header-theme-toggle" (click)="toggleTheme($event)"
+            [attr.aria-label]="sharedservice.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+            [attr.title]="sharedservice.isDarkMode ? 'Light mode' : 'Dark mode'">
+            @if (sharedservice.isDarkMode) {
+            <span><i class="fa-regular fa-sun-bright" aria-hidden="true"></i></span>
+            } @else {
+            <span><i class="fa-regular fa-moon" aria-hidden="true"></i></span>
+            }
+        </button>
+        <ng-container *ngIf="authService.isLoggedIn$ | async; else loggedOut">
+            <div class="header-balance-main" (click)="$event.stopPropagation()">
+                <div class="header-balance" (click)="toggleBalance($event)">
+                    <div class="header-balance-icon">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div class="header-balance-icon-data">
+                        <div class="header-balance-ctx">
+                            <div class="header-balance-ttl">LIVE ACCOUNT</div>
+                            <div class="header-balance-val">
+                                {{ sharedservice.formatToBrandCurrency(+this.authService.currentBalance || 0)}}
+                            </div>
+                        </div>
+                        <div class="header-balance-arrow" [class.open]="isBalanceOpen">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Balance Dropdown -->
+                <div class="hb-dropdown" *ngIf="isBalanceOpen" (click)="$event.stopPropagation()">
+                    <div class="hbd-row hbd-row-highlight">
+                        <span class="hbd-key"><i class="fa-light fa-wallet"></i> Balance</span>
+                        <span class="hbd-val">{{ sharedservice.formatToBrandCurrency(authService.currentBalance || 0)
+                            }}</span>
+                    </div>
+                    <div class="hbd-row">
+                        <span class="hbd-key"><i class="fa-light fa-scale-balanced"></i> Equity</span>
+                        <span class="hbd-val"
+                            [ngClass]="equity >= (authService.currentBalance || 0) ? 'hbd-green' : 'hbd-red'">
+                            {{ sharedservice.formatToBrandCurrency(equity) }}
+                        </span>
+                    </div>
+                    <div class="hbd-row">
+                        <span class="hbd-key"><i class="fa-light fa-lock"></i> Margin</span>
+                        <span class="hbd-val">{{ sharedservice.formatToBrandCurrency(margin) }}</span>
+                    </div>
+                    <div class="hbd-row">
+                        <span class="hbd-key"><i class="fa-light fa-unlock"></i> Free Margin</span>
+                        <span class="hbd-val" [ngClass]="freeMargin >= 0 ? 'hbd-green' : 'hbd-red'">
+                            {{ sharedservice.formatToBrandCurrency(freeMargin) }}
+                        </span>
+                    </div>
+                    <div class="hbd-row">
+                        <span class="hbd-key"><i class="fa-light fa-percent"></i> Margin Level</span>
+                        <span class="hbd-val">{{ marginLevel > 0 ? (marginLevel | number:'1.0-2') + '%' : '—' }}</span>
+                    </div>
+                    <div class="hbd-divider"></div>
+                    <div class="hbd-row">
+                        <span class="hbd-key"><i class="fa-light fa-chart-line"></i> Open Positions</span>
+                        <span class="hbd-val">{{ openPositions }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right-menu-main">
+                <div class="header-profile" routerLink="/account">
+                    <img src="assets/img/profile/icon.png" alt="profile" />
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #loggedOut>
+            <div class="header-right-auth header-right-btns-main">
+                <div class="header-right-btn login active" routerLink="/login">
+                    Login
+                </div>
+            </div>
+        </ng-template>
+    </div>
+</div>
+<div class="bottom-bar-main">
+    <div class="bottom-bar">
+        <div class="bottom-bar-row">
+            <!-- <div class="bottom-bar-menu" [ngClass]="checkMenuActive('home') ? 'active' : ''">
+                <div class="bottom-bar-menu-icon">
+                    <span *ngIf="!checkMenuActive('home')"><i class="fa-light fa-house"></i></span>
+                    <span *ngIf="checkMenuActive('home')"><i class="fa-solid fa-house"></i></span>
+                </div>
+                <div class="bottom-bar-menu-txt">Home</div>
+            </div> -->
+            <div class="bottom-bar-menu" routerLink="/watchlist"
+                [ngClass]="checkMenuActive('watchlist') ? 'active' : ''">
+                <div class="bottom-bar-menu-icon">
+                    @if(checkMenuActive('watchlist')){
+                    <span><i class="fa-solid fa-circle-star"></i></span>
+                    }@else{
+                    <span><i class="fa-light fa-circle-star"></i></span>
+                    }
+                </div>
+                <div class="bottom-bar-menu-txt">Watchlist</div>
+            </div>
+            <div class="bottom-bar-menu" routerLink="/trade" [ngClass]="checkMenuActive('trade') ? 'active' : ''">
+                <div class="bottom-bar-menu-icon">
+                    @if(checkMenuActive('trade')){
+                    <span><i class="fa-solid fa-chart-area"></i></span>
+                    }@else{
+                    <span><i class="fa-light fa-chart-area"></i></span>
+                    }
+                </div>
+                <div class="bottom-bar-menu-txt">Trade</div>
+            </div>
+            <div class="bottom-bar-menu" routerLink="/orders" [ngClass]="checkMenuActive('orders') ? 'active' : ''">
+                <div class="bottom-bar-menu-icon">
+                    @if(checkMenuActive('orders')){
+                    <span><i class="fa-solid fa-inbox"></i></span>
+                    }@else{
+                    <span><i class="fa-light fa-inbox"></i></span>
+                    }
+                </div>
+                <div class="bottom-bar-menu-txt">Orders</div>
+            </div>
+            <div class="bottom-bar-menu" routerLink="/account" [class.active]="checkMenuActive('account')">
+                <div class="bottom-bar-menu-icon">
+                    @if(checkMenuActive('account')){
+                    <span><i class="fa-solid fa-user"></i></span>
+                    }@else{
+                    <span><i class="fa-light fa-user"></i></span>
+                    }
+                </div>
+                <div class="bottom-bar-menu-txt">Account</div>
+            </div>
+        </div>
+    </div>
+</div>

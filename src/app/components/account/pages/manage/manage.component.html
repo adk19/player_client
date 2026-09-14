@@ -1,0 +1,330 @@
+<div class="manage-page">
+
+  <div class="manage-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <span class="manage-loading-text">Loading profile…</span>
+  </div>
+
+  <div class="manage-error" *ngIf="!loading && error">
+    <i class="fa-light fa-triangle-exclamation"></i>
+    <span>{{ error }}</span>
+    <button type="button" class="manage-retry" (click)="loadAll(false)">Try again</button>
+  </div>
+
+  <ng-container *ngIf="!loading && summary && analytics && marginCalls">
+
+    <header class="manage-header">
+      <div class="manage-header-text">
+        <div class="manage-kicker">Account</div>
+        <h1 class="manage-title">Profile</h1>
+        <p class="manage-sub">Wallet, identity, and trading statistics from your live account.</p>
+      </div>
+      <button type="button" class="manage-refresh" (click)="refresh()" [disabled]="refreshing" title="Refresh profile" aria-label="Refresh profile">
+        <i class="fa-light fa-rotate-right" [class.fa-spin]="refreshing"></i>
+      </button>
+    </header>
+
+    <!-- Quick glance -->
+    <section class="manage-strip" *ngIf="wallet || trading">
+      <div class="manage-strip-item" *ngIf="wallet">
+        <span class="manage-strip-label">Balance</span>
+        <span class="manage-strip-value">{{ brandFmt(wallet.balance) }}</span>
+      </div>
+      <div class="manage-strip-item" *ngIf="trading">
+        <span class="manage-strip-label">Win rate</span>
+        <span class="manage-strip-value accent">{{ pctFmt(trading.win_rate) }}%</span>
+      </div>
+      <div class="manage-strip-item" *ngIf="trading">
+        <span class="manage-strip-label">Trades</span>
+        <span class="manage-strip-value">{{ intFmt(trading.total_trades) }}</span>
+      </div>
+    </section>
+
+    <!-- Identity -->
+    <section class="manage-hero">
+      <div class="manage-hero-avatar" aria-hidden="true">
+        <i class="fa-light fa-user"></i>
+      </div>
+      <div class="manage-hero-body">
+        <div class="manage-hero-top">
+          <h2 class="manage-hero-name">{{ profile?.username || '—' }}</h2>
+          <span class="manage-status-pill" [class.active]="profile?.status_id === 1">
+            <span class="manage-status-dot"></span>
+            {{ getStatusLabel(profile?.status_id ?? 0) }}
+          </span>
+        </div>
+        <div class="manage-hero-meta">
+          <span class="manage-id">Player #{{ profile?.id ?? '—' }}</span>
+          <span class="manage-dot" aria-hidden="true">·</span>
+          <span>Member since {{ formatDate(profile?.created_at ?? '') }}</span>
+        </div>
+        <div class="manage-hero-badges">
+          <span class="manage-mini-badge">Status ID {{ profile?.status_id ?? '—' }}</span>
+          <span class="manage-mini-badge manage-health" [ngClass]="marginHealthClass" *ngIf="margin">{{ marginHealthLabel }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="manage-card manage-card--lift manage-card--interactive">
+      <div class="manage-card-head">
+        <i class="fa-light fa-address-card"></i>
+        <span>Contact &amp; account</span>
+      </div>
+      <div class="manage-kv-grid">
+        <div class="manage-kv manage-kv--full manage-kv--row">
+          <div class="manage-kv-stack">
+            <span class="manage-kv-label">Email</span>
+            <span class="manage-kv-value">{{ profile?.email || '—' }}</span>
+          </div>
+          <button type="button" class="manage-copy-btn" *ngIf="profile?.email" (click)="copyEmail()" title="Copy email">
+            <i class="fa-light fa-copy"></i>
+          </button>
+        </div>
+        <div class="manage-kv">
+          <span class="manage-kv-label">Phone</span>
+          <span class="manage-kv-value mono">{{ profile?.phone || '—' }}</span>
+        </div>
+        <div class="manage-kv" *ngIf="profile?.parent_user_id != null">
+          <span class="manage-kv-label">Parent user ID</span>
+          <span class="manage-kv-value mono">#{{ profile?.parent_user_id }}</span>
+        </div>
+        <div class="manage-kv manage-kv--full">
+          <span class="manage-kv-label">Registered (exact)</span>
+          <span class="manage-kv-value subtle mono-sm">{{ formatDateTime(profile?.created_at ?? '') }}</span>
+        </div>
+      </div>
+      <div class="manage-copy-toast" *ngIf="copyFeedback">{{ copyFeedback }}</div>
+    </section>
+
+    <!-- Wallet -->
+    <section class="manage-card manage-card--lift manage-card--interactive" *ngIf="wallet">
+      <div class="manage-card-head">
+        <i class="fa-light fa-wallet"></i>
+        <span>Wallet</span>
+      </div>
+
+      <div class="manage-balance-hero">
+        <div class="manage-balance-label">Total balance</div>
+        <div class="manage-balance-num">{{ brandFmt(wallet.balance) }}</div>
+        <div class="manage-balance-exact" title="Raw value from server">
+          <span class="manage-exact-label">Exact</span>
+          <span class="manage-exact-val">{{ exactNum(wallet.balance) }}</span>
+        </div>
+        <div class="manage-balance-sub">
+          <span class="manage-pill"><strong>Available</strong> {{ brandFmt(wallet.available) }}</span>
+          <span class="manage-pill">Reserved {{ brandFmt(wallet.reserved) }}</span>
+        </div>
+        <div class="manage-reserved-track" *ngIf="reservedOfBalancePct > 0" title="Reserved share of balance">
+          <div class="manage-reserved-fill" [style.width.%]="reservedOfBalancePct"></div>
+        </div>
+        <div class="manage-reserved-hint" *ngIf="reservedOfBalancePct > 0">
+          {{ pctFmt(reservedOfBalancePct, 1) }}% of balance reserved
+        </div>
+      </div>
+
+      <div class="manage-wallet-grid">
+        <div class="manage-wcell">
+          <span class="manage-wcell-label">Available</span>
+          <span class="manage-wcell-main">{{ brandFmt(wallet.available) }}</span>
+          <span class="manage-wcell-sub mono-sm">{{ exactNum(wallet.available) }}</span>
+        </div>
+        <div class="manage-wcell">
+          <span class="manage-wcell-label">Reserved</span>
+          <span class="manage-wcell-main">{{ brandFmt(wallet.reserved) }}</span>
+          <span class="manage-wcell-sub mono-sm">{{ exactNum(wallet.reserved) }}</span>
+        </div>
+        <div class="manage-wcell">
+          <span class="manage-wcell-label">Credit limit</span>
+          <span class="manage-wcell-main">{{ brandFmt(wallet.credit_limit) }}</span>
+          <span class="manage-wcell-sub mono-sm">{{ exactNum(wallet.credit_limit) }}</span>
+        </div>
+        <div class="manage-wcell">
+          <span class="manage-wcell-label">Lifetime deposits</span>
+          <span class="manage-wcell-main pos">{{ brandFmt(wallet.lifetime_deposits) }}</span>
+          <span class="manage-wcell-sub mono-sm pos">{{ exactNum(wallet.lifetime_deposits) }}</span>
+        </div>
+        <div class="manage-wcell">
+          <span class="manage-wcell-label">Lifetime withdrawals</span>
+          <span class="manage-wcell-main neg">{{ brandFmt(wallet.lifetime_withdrawals) }}</span>
+          <span class="manage-wcell-sub mono-sm neg">{{ exactNum(wallet.lifetime_withdrawals) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Margin snapshot -->
+    <section class="manage-card manage-card--lift manage-card--interactive" *ngIf="margin">
+      <div class="manage-card-head">
+        <i class="fa-light fa-shield-halved"></i>
+        <span>Margin</span>
+      </div>
+      <div class="manage-margin-strip">
+        <div class="manage-ms-item">
+          <span class="manage-ms-lbl">Equity</span>
+          <span class="manage-ms-val">{{ brandFmt(margin.equity) }}</span>
+        </div>
+        <div class="manage-ms-item">
+          <span class="manage-ms-lbl">Used</span>
+          <span class="manage-ms-val warn">{{ brandFmt(margin.used_margin) }}</span>
+        </div>
+        <div class="manage-ms-item">
+          <span class="manage-ms-lbl">Exposure</span>
+          <span class="manage-ms-val">{{ brandFmt(margin.summary_raw?.total_exposure) }}</span>
+        </div>
+        <div class="manage-ms-item">
+          <span class="manage-ms-lbl">Unrealized P&amp;L</span>
+          <span class="manage-ms-val" [ngClass]="plClass(margin.summary_raw?.unrealized_pnl)">{{ signedBrand(margin.summary_raw?.unrealized_pnl) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trading -->
+    <section class="manage-card manage-card--lift manage-card--interactive" *ngIf="trading && pnl">
+      <div class="manage-card-head manage-card-head--split">
+        <div>
+          <i class="fa-light fa-chart-mixed"></i>
+          <span>Trading summary</span>
+          <span class="manage-range-hint">{{ analyticsStart }} → {{ analyticsEnd }}</span>
+        </div>
+        <div class="manage-analytics-tools">
+          <input type="date" class="manage-date-inp" [(ngModel)]="analyticsStart" />
+          <span class="manage-date-sep">—</span>
+          <input type="date" class="manage-date-inp" [(ngModel)]="analyticsEnd" />
+          <button type="button" class="manage-btn-apply" (click)="reloadAnalytics()" [disabled]="analyticsRefreshing">
+            <i class="fa-light fa-spinner fa-spin" *ngIf="analyticsRefreshing"></i>
+            Apply
+          </button>
+        </div>
+      </div>
+
+      <div class="manage-trade-top">
+        <div class="manage-win-block">
+          <div class="manage-win-pct-lg">{{ pctFmt(trading.win_rate) }}<span class="manage-win-pct-unit">%</span></div>
+          <div class="manage-win-lbl">Win rate</div>
+          <div class="manage-win-track">
+            <div class="manage-win-fill" [style.width.%]="trading.win_rate > 100 ? 100 : (trading.win_rate < 0 ? 0 : trading.win_rate)"></div>
+          </div>
+        </div>
+        <div class="manage-trade-counts">
+          <div class="manage-count-row">
+            <span class="manage-count-label">Total trades</span>
+            <span class="manage-count-val">{{ intFmt(trading.total_trades) }}</span>
+          </div>
+          <div class="manage-count-row">
+            <span class="manage-count-label">Wins</span>
+            <span class="manage-count-val pos">{{ intFmt(trading.win_trades) }}</span>
+          </div>
+          <div class="manage-count-row">
+            <span class="manage-count-label">Losses</span>
+            <span class="manage-count-val neg">{{ intFmt(trading.loss_trades) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="manage-wl-bar" *ngIf="winLossBar.wins + winLossBar.losses > 0" [attr.aria-label]="'Wins ' + winLossBar.wins + ', losses ' + winLossBar.losses">
+        <div class="manage-wl-seg manage-wl-seg--win" [style.width.%]="winLossBar.winPct"></div>
+        <div class="manage-wl-seg manage-wl-seg--loss" [style.width.%]="winLossBar.lossPct"></div>
+      </div>
+      <div class="manage-wl-legend" *ngIf="winLossBar.wins + winLossBar.losses > 0">
+        <span><i class="fa-solid fa-square pos"></i> Wins {{ intFmt(winLossBar.wins) }}</span>
+        <span><i class="fa-solid fa-square neg"></i> Losses {{ intFmt(winLossBar.losses) }}</span>
+      </div>
+
+      <div class="manage-pl-grid">
+        <div class="manage-pl-tile">
+          <span class="manage-pl-label">Total realized P&amp;L</span>
+          <span class="manage-pl-value" [ngClass]="plClass(pnl.realized_total)">
+            {{ signedBrand(pnl.realized_total) }}
+          </span>
+          <span class="manage-pl-exact mono-sm" [ngClass]="plClass(pnl.realized_total)">{{ exactNum(pnl.realized_total) }}</span>
+        </div>
+        <div class="manage-pl-tile">
+          <span class="manage-pl-label">Avg trade P&amp;L</span>
+          <span class="manage-pl-value" [ngClass]="plClass(avgTradePl)">
+            {{ signedBrand(avgTradePl) }}
+          </span>
+          <span class="manage-pl-exact mono-sm" [ngClass]="plClass(avgTradePl)" *ngIf="avgTradePl != null">{{ exactNum(avgTradePl) }}</span>
+        </div>
+        <div class="manage-pl-tile" *ngIf="pnl.best_trade">
+          <span class="manage-pl-label">Best trade</span>
+          <span class="manage-pl-value pos">{{ pnl.best_trade.symbol }} · {{ signedBrand(pnl.best_trade.realized_pl) }}</span>
+        </div>
+        <div class="manage-pl-tile" *ngIf="!pnl.best_trade">
+          <span class="manage-pl-label">Best trade</span>
+          <span class="manage-pl-value">—</span>
+        </div>
+        <div class="manage-pl-tile" *ngIf="pnl.worst_trade">
+          <span class="manage-pl-label">Worst trade</span>
+          <span class="manage-pl-value neg">{{ pnl.worst_trade.symbol }} · {{ brandFmt(pnl.worst_trade.realized_pl) }}</span>
+        </div>
+        <div class="manage-pl-tile" *ngIf="!pnl.worst_trade">
+          <span class="manage-pl-label">Worst trade</span>
+          <span class="manage-pl-value">—</span>
+        </div>
+      </div>
+
+      <div class="manage-most-traded" *ngIf="trading.most_traded_symbols?.length">
+        <span class="manage-most-label">Most traded symbols</span>
+        <div class="manage-chip-row">
+          <span class="manage-chip" *ngFor="let s of trading.most_traded_symbols!.slice(0, 12)">
+            {{ s.symbol }} <em>{{ intFmt(s.trades) }}</em>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Margin alerts -->
+    <section class="manage-card manage-card--lift" *ngIf="marginCalls">
+      <div class="manage-card-head manage-card-head--split">
+        <div>
+          <i class="fa-light fa-triangle-exclamation"></i>
+          <span>Margin alerts</span>
+          <span class="manage-range-hint">{{ mcStart }} → {{ mcEnd }}</span>
+        </div>
+        <div class="manage-analytics-tools">
+          <input type="date" class="manage-date-inp" [(ngModel)]="mcStart" />
+          <span class="manage-date-sep">—</span>
+          <input type="date" class="manage-date-inp" [(ngModel)]="mcEnd" />
+          <button type="button" class="manage-btn-apply" (click)="onMcDatesApply()" [disabled]="marginLoading">Apply</button>
+        </div>
+      </div>
+
+      <div class="mc-table" *ngIf="marginRows.length">
+        <div class="mc-head">
+          <span>Type</span>
+          <span>Margin %</span>
+          <span>When</span>
+        </div>
+        <div class="mc-row" *ngFor="let r of marginRows">
+          <span class="mc-type">{{ alertTypeLabel(r.alert_type) }}</span>
+          <span class="mono">{{ pctFmt(r.current_margin_percent, 2) }}%</span>
+          <span class="mc-when">{{ formatDateTime(r.created_at) }}</span>
+        </div>
+      </div>
+      <div class="manage-empty" *ngIf="!marginRows.length && !marginLoading">No alerts in this range.</div>
+      <div class="manage-inline-loading" *ngIf="marginLoading"><i class="fa-light fa-spinner fa-spin"></i></div>
+
+      <div class="manage-pager" *ngIf="(marginCalls.total_count ?? 0) > 0">
+        <span class="manage-pager-info">Page {{ mcPage }} / {{ marginCalls.total_pages || 1 }} · {{ marginCalls.total_count }} total</span>
+        <div class="manage-pager-ctrl">
+          <label for="mc-limit">Rows</label>
+          <select id="mc-limit" [(ngModel)]="mcLimit" (ngModelChange)="onMcLimitChange()">
+            <option *ngFor="let n of mcLimitOptions" [ngValue]="n">{{ n }}</option>
+          </select>
+          <button type="button" class="manage-pg-btn" [disabled]="mcPage <= 1 || marginLoading" (click)="prevMcPage()">
+            <i class="fa-light fa-chevron-left"></i>
+          </button>
+          <button type="button" class="manage-pg-btn" [disabled]="mcPage >= (marginCalls.total_pages || 1) || marginLoading" (click)="nextMcPage()">
+            <i class="fa-light fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <button class="manage-logout" type="button" (click)="onLogout()">
+      <i class="fa-light fa-right-from-bracket"></i>
+      Log out
+    </button>
+
+  </ng-container>
+</div>

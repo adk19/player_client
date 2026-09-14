@@ -1,0 +1,348 @@
+<div class="tv-chart-wrapper" [ngClass]="{'tv-mode-on': isTradingView}">
+  <div class="chart-top-main">
+    <div class="chart-topbar" [ngClass]="{'tv-mode': isTradingView}">
+
+      <!-- ── Pair info: fav · logo · symbol · price · quote · brand · change badge ── -->
+      <div class="pair-info">
+
+        <!-- Star button -->
+        <button class="pair-fav-btn" (click)="toggleWatchlist($event)" type="button"
+          [attr.aria-label]="isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'">
+          <i class="fa-star " [ngClass]="isWatchlisted ? 'fa-solid is-active' : 'fa-regular'"></i>
+        </button>
+
+        <!-- Logo / Avatar -->
+        <div class="pair-logo">
+          @if(pairDetail?.logo_url) {
+          <img [src]="pairDetail.logo_url" [alt]="pairDetail?.market" />
+          } @else {
+          <span class="pair-logo-fallback">{{ (pairDetail?.base_currency_code || displaySymbol).slice(0,2) }}</span>
+          }
+        </div>
+
+        <!-- Symbol name -->
+        <span class="pair-name">{{ pairDetail?.market }}</span>
+
+        <!-- Divider -->
+        <span class="pair-info-divider"></span>
+
+        <!-- Big price -->
+        <span class="pair-price" [class.up]="changePct >= 0" [class.down]="changePct < 0">
+          {{ displayPrice | number:'1.2-5' }}
+        </span>
+
+        <!-- /QUOTE label -->
+        <span class="pair-quote-label">/ {{ quoteSymbol }}</span>
+
+        <!-- Brand price -->
+        @if (brandPrice) {
+        <span class="pair-brand-price">
+          ≈ {{ brandPrice.symbol }}{{ brandPrice.price || 0 | number:'1.2-2' }}
+        </span>
+        }
+
+        <!-- Change badge -->
+        <span class="pair-change-badge" [class.up]="changePct >= 0" [class.down]="changePct < 0">
+          {{ changePct >= 0 ? '+' : '' }}{{ changePct | number:'1.2-2' }}%
+        </span>
+
+      </div>
+
+      @if (isTradingView) {
+      <div class="chart-toggle-main">
+        <div class="tf-btn" [class.active]="currentChartType === 'Original'" (click)="setChartType('Original')">
+          Original
+        </div>
+        <div class="tf-btn" [class.active]="currentChartType === 'Tradingview'" (click)="setChartType('Tradingview')">
+          Trading View
+        </div>
+        <div class="tf-btn" [class.active]="currentChartType === 'Depth'" (click)="setChartType('Depth')">
+          Depth
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (!isTradingView || currentChartType === 'Original') {
+    <div class="chart-header">
+      <div class="left">
+        <div class="chart-section">
+          <div class="segmented-control" #intervalSegments>
+            <span class="seg-indicator" [style.left]="intervalIndicatorLeft"
+              [style.width]="intervalIndicatorWidth"></span>
+            @for (itv of intervals; track $index) {
+            <button class="seg-btn" [class.active]="itv === activeInterval" (click)="applyInterval(itv)"
+              [attr.data-index]="$index">
+              {{ itv }}
+            </button>
+            }
+          </div>
+        </div>
+        <div class="chart-divider"></div>
+        <div class="chart-section">
+          <div class="segmented-control chart-type-seg" #chartTypeSegments>
+            <span class="seg-indicator" [style.left]="chartTypeIndicatorLeft"
+              [style.width]="chartTypeIndicatorWidth"></span>
+            @for (t of chartTypes; track $index) {
+            <button class="seg-btn" [class.active]="t.key === activeChartType" [class.disabled]="!t.enabled"
+              (click)="applyChartType(t)" [attr.data-index]="$index">
+              <i [class]="t.icon"></i>
+              <span class="seg-label">{{ t.label }}</span>
+            </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stats strip: High / Low / Vol / etc. shown right of chart controls ── -->
+      @if (hasStatsData) {
+      <div class="chart-stats-strip">
+
+        @if (!isCryptoMarketType && symbolInfoData) {
+          <!-- MT5 / FOREX / METAL / INDEX -->
+          <div class="stat-item">
+            <span class="stat-lbl">Bid</span>
+            <span class="stat-val">{{ symbolInfoData.b | number:'1.2-5' }}</span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Ask</span>
+            <span class="stat-val">{{ symbolInfoData.a | number:'1.2-5' }}</span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">High</span>
+            <span class="stat-val up">
+              {{ (symbolInfoData.h ?? pairDetail?.high ?? infoBar?.high) | number:'1.2-5' }}
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Low</span>
+            <span class="stat-val down">
+              {{ (symbolInfoData.l ?? pairDetail?.low ?? infoBar?.low) | number:'1.2-5' }}
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Chg</span>
+            <span class="stat-val" [class.up]="absoluteChange >= 0" [class.down]="absoluteChange < 0">
+              {{ absoluteChange >= 0 ? '+' : '' }}{{ absoluteChange | number:'1.2-5' }}
+              ({{ changePct >= 0 ? '+' : '' }}{{ changePct | number:'1.2-2' }}%)
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Vol</span>
+            <span class="stat-val">{{ (symbolInfoData.v ?? pairDetail?.volume ?? 0) | number:'1.0-0' }}</span>
+          </div>
+          @if (symbolInfoData.ty) {
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Type</span>
+            <span class="stat-val muted">{{ symbolInfoData.ty }}</span>
+          </div>
+          }
+
+        } @else {
+          <!-- Crypto / Binance -->
+          <div class="stat-item">
+            <span class="stat-lbl">24h Chg</span>
+            <span class="stat-val" [class.up]="(infoBar?.changePct ?? 0) >= 0"
+              [class.down]="(infoBar?.changePct ?? 0) < 0">
+              {{ absoluteChange >= 0 ? '+' : '' }}{{ absoluteChange | number:'1.2-2' }}&nbsp;
+              ({{ (infoBar?.changePct ?? 0) >= 0 ? '+' : '' }}{{ (infoBar?.changePct ?? 0) | number:'1.2-2' }}%)
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">24h High</span>
+            <span class="stat-val up">
+              {{ (singleTickerData?.h ?? pairDetail?.high ?? infoBar?.high ?? displayPrice) | number:'1.2-2' }}
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">24h Low</span>
+            <span class="stat-val down">
+              {{ (singleTickerData?.l ?? pairDetail?.low ?? infoBar?.low ?? displayPrice) | number:'1.2-2' }}
+            </span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Vol({{ baseSymbol }})</span>
+            <span class="stat-val">{{ (singleTickerData?.v ?? pairDetail?.volume ?? 0) | number:'1.2-2' }}</span>
+          </div>
+          <span class="stat-sep"></span>
+          <div class="stat-item">
+            <span class="stat-lbl">Vol({{ quoteSymbol }})</span>
+            <span class="stat-val">{{ quoteVolume | number:'1.2-2' }}</span>
+          </div>
+        }
+
+      </div>
+      }
+
+    </div>
+    }
+  </div>
+
+  <!-- @if (infoBar) {
+  <div class="info-bar info-bar-top">
+    <div class="info-bar-row info-bar-row-top">
+      <span class="main-dtl">
+        <span class="sp">Open:</span>
+        <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.open | number:'1.0-2' }}</span>
+      </span>
+      <span class="main-dtl">
+        <span class="sp">High:</span>
+        <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.high | number:'1.0-2' }}</span>
+      </span>
+      <span class="main-dtl">
+        <span class="sp">Low:</span>
+        <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.low | number:'1.0-2' }}</span>
+      </span>
+      <span class="main-dtl">
+        <span class="sp">Close:</span>
+        <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.close | number:'1.0-2' }}</span>
+      </span>
+      <span class="main-dtl">
+        <span class="sp">Change:</span>
+        <span [class.up]="infoBar.changePct>=0" [class.down]="infoBar.changePct<0">{{ infoBar.changePct>=0?'+':''}}{{
+          infoBar.changePct | number:'1.0-2' }}%</span>
+      </span>
+      <span class="main-dtl">
+        <span class="sp">Amplitude:</span>
+        <span [class.up]="infoBar.amplitudePct>=0" [class.down]="infoBar.amplitudePct<0">{{ infoBar.amplitudePct |
+          number:'1.0-2' }}%</span>
+      </span>
+    </div>
+  </div>
+  } -->
+
+  @if (currentChartType === 'Original') {
+  <div class="chart-info-main" [class.expanded]="isMobileChartExpanded">
+    <!-- <button type="button" class="expand-btn" (click)="toggleMobileExpand()" aria-label="Toggle chart size">
+      <i class="fa-regular" [ngClass]="isMobileChartExpanded ? 'fa-compress' : 'fa-expand'"></i>
+    </button> -->
+    <!-- @if (infoBar) {
+    <div class="info-bar info-bar-inner">
+      <div class="info-bar-row info-bar-row-top">
+        <span class="main-dtl">
+          <span class="lb">{{ infoBar.time }}</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">Open:</span>
+          <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.open |
+            number:'1.0-2' }}</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">High:</span>
+          <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.high | number:'1.0-2' }}</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">Low:</span>
+          <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.low | number:'1.0-2' }}</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">Close:</span>
+          <span [class.up]="infoBar.isUp" [class.down]="!infoBar.isUp">{{ infoBar.close | number:'1.0-2' }}</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">Change:</span>
+          <span [class.up]="infoBar.changePct>=0" [class.down]="infoBar.changePct < 0">
+            {{infoBar.changePct>=0?'+':''}}{{infoBar.changePct | number:'1.0-2' }}%</span>
+        </span>
+        <span class="main-dtl">
+          <span class="sp">Amplitude:</span>
+          <span [class.up]="infoBar.amplitudePct>=0" [class.down]="infoBar.amplitudePct < 0">
+            {{ infoBar.amplitudePct | number:'1.0-2' }}%</span>
+        </span>
+      </div>
+    </div>
+    } -->
+
+    <div class="info-bar info-bar-inner info-bar-second">
+      <div class="info-bar-row info-bar-row-top">
+        <div class="chart-header">
+          <div class="left">
+            <div class="chart-section">
+              <span class="chart-section-label">Interval</span>
+              <div class="segmented-control" #intervalSegmentsInner>
+                <span class="seg-indicator" [style.left]="intervalIndicatorLeft"
+                  [style.width]="intervalIndicatorWidth"></span>
+                @for (itv of intervals; track $index) {
+                <button class="seg-btn" [class.active]="itv === activeInterval" (click)="applyInterval(itv)"
+                  [attr.data-index]="$index">
+                  {{ itv }}
+                </button>
+                }
+              </div>
+            </div>
+            <div class="chart-divider"></div>
+            <div class="chart-section">
+              <span class="chart-section-label">Style</span>
+              <div class="segmented-control chart-type-seg" #chartTypeSegmentsInner>
+                <span class="seg-indicator" [style.left]="chartTypeIndicatorLeft"
+                  [style.width]="chartTypeIndicatorWidth"></span>
+                @for (t of chartTypes; track $index) {
+                <button class="seg-btn" [class.active]="t.key === activeChartType" [class.disabled]="!t.enabled"
+                  (click)="applyChartType(t)" [attr.data-index]="$index">
+                  <i [class]="t.icon"></i>
+                  <span class="seg-label">{{ t.label }}</span>
+                </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <div #chartContainer class="chart-container"></div>
+      <div class="trade-markers-layer" aria-hidden="true">
+        @for (m of tradeMarkers; track m.id) {
+          <div
+            class="trade-marker"
+            [class.trade-marker--buy]="m.side === 'buy'"
+            [class.trade-marker--sell]="m.side === 'sell'"
+            [style.left.px]="m.left"
+            [style.top.px]="m.top"
+            [style.display]="m.visible ? 'flex' : 'none'">
+            <span class="trade-marker__amount">{{ m.label }}</span>
+            <span class="trade-marker__dot" aria-hidden="true">
+              <i class="fa-solid" [ngClass]="m.side === 'buy' ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+            </span>
+          </div>
+        }
+      </div>
+      <div class="crosshair-price-label" #crosshairPriceLabel></div>
+      <div class="crosshair-time-label" #crosshairTimeLabel></div>
+    </div>
+  </div>
+  }
+
+  <!-- TradingView widget — shown when is_tradingview=true on pairDetail and currentChartType is Tradingview -->
+  @if (isTradingView && currentChartType === 'Tradingview') {
+  <div class="chart-info-main tv-mode">
+    <app-tradingview-chart [symbol]="symbol" [isCryptoMarket]="tradingViewUsesBinanceExchange"
+      [interval]="activeInterval" [theme]="resolveTheme()" (tvError)="onTvError()" />
+  </div>
+  }
+
+  @if(currentChartType === 'Tradingview'){
+  <div class="chart-info-main">
+    <div class="chart-wrap">
+      <div #tvContainer class="chart-container"></div>
+    </div>
+  </div>
+  }
+
+  @if(currentChartType === 'Depth'){
+  <div class="chart-info-main">
+    <div class="chart-wrap">
+      <div #depthContainer class="chart-container"></div>
+    </div>
+  </div>
+  }
+</div>

@@ -1,0 +1,124 @@
+.custom-container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+input{
+  &:focus{
+    outline: none !important;
+  }
+}
+
+@media (min-width: 576px) {
+  .custom-container {
+    max-width: 540px;
+  }
+}
+@media (min-width: 768px) {
+  .custom-container {
+    max-width: 720px;
+  }
+}
+@media (min-width: 992px) {
+  .custom-container {
+    max-width: 960px;
+  }
+}
+@media (min-width: 1200px) {
+  .custom-container {
+    max-width: 1140px;
+  }
+}
+@media (min-width: 1400px) {
+  .custom-container {
+    max-width: 1320px;
+  }
+}
+
+.form-control{
+    border-radius: 10px;
+    background-color: transparent !important;
+    color: var(--main-text) !important;
+    border: 1px solid var(--input-border);
+    
+    &::placeholder{
+        color: var(--normal-text) !important;
+    }
+}
+.form-control:hover{
+    border: 1px solid var(--primary);
+}
+.form-control:focus{
+    box-shadow: none !important;
+    border: 1px solid var(--primary);
+}
+::-webkit-scrollbar {
+  width: 7px;
+  padding: 2px;
+}
+::-webkit-scrollbar-track {
+  background: var(--layout-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--header-bg);
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Login autofill (loaded in global bundle; hex required for :-webkit-autofill) */
+@keyframes trade-login-autofill-dark {
+  0%,
+  100% {
+    background-color: #0a0a0a;
+    color: #fafafa;
+  }
+}
+
+@keyframes trade-login-autofill-light {
+  0%,
+  100% {
+    background-color: #ffffff;
+    color: #3e3838;
+  }
+}
+
+html.dark .trade-login__input-wrap .trade-login__input:-webkit-autofill,
+html.dark .trade-login__input-wrap .trade-login__input:-webkit-autofill:hover,
+html.dark .trade-login__input-wrap .trade-login__input:-webkit-autofill:focus,
+html.dark .trade-login__input-wrap .trade-login__input:-webkit-autofill:active {
+  -webkit-animation: trade-login-autofill-dark 1ms ease-out 0s forwards;
+  animation: trade-login-autofill-dark 1ms ease-out 0s forwards;
+  -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset !important;
+  box-shadow: 0 0 0 1000px #0a0a0a inset !important;
+  -webkit-text-fill-color: #fafafa !important;
+  caret-color: #fafafa;
+  background-color: #0a0a0a !important;
+  transition: background-color 99999s ease-out 0s, color 99999s ease-out 0s;
+}
+
+html:not(.dark) .trade-login__input-wrap .trade-login__input:-webkit-autofill,
+html:not(.dark) .trade-login__input-wrap .trade-login__input:-webkit-autofill:hover,
+html:not(.dark) .trade-login__input-wrap .trade-login__input:-webkit-autofill:focus,
+html:not(.dark) .trade-login__input-wrap .trade-login__input:-webkit-autofill:active {
+  -webkit-animation: trade-login-autofill-light 1ms ease-out 0s forwards;
+  animation: trade-login-autofill-light 1ms ease-out 0s forwards;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #3e3838 !important;
+  caret-color: #3e3838;
+  background-color: #ffffff !important;
+  transition: background-color 99999s ease-out 0s, color 99999s ease-out 0s;
+}

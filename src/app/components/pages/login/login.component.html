@@ -1,0 +1,339 @@
+﻿<div
+  class="trade-login"
+  [class.trade-login--sheet-open]="mobileSheetOpen"
+  [class.trade-login--mode-login]="authMode === 'login'"
+  [class.trade-login--mode-register]="authMode === 'register'">
+  <div class="trade-login__bg" aria-hidden="true">
+    <span class="trade-login__orb trade-login__orb--a"></span>
+    <span class="trade-login__orb trade-login__orb--b"></span>
+    <span class="trade-login__orb trade-login__orb--c"></span>
+    <span class="trade-login__grid-lines"></span>
+  </div>
+
+  <div
+    class="trade-login__sheet-backdrop"
+    *ngIf="mobileSheetOpen"
+    (click)="closeMobileSheet()"
+    aria-hidden="true"></div>
+
+  <div class="trade-login__content">
+    <header class="trade-login__top">
+      <div class="trade-login__brand">
+        @if(sharedservice.isDarkMode){
+          <img class="trade-login__logo" [src]="sharedservice.brandDarkLogoUrl || '../../../../../assets/img/logo/white-logo.png'" alt="full-logo-light" />
+        }@else{
+            <img class="trade-login__logo" [src]="sharedservice.brandLogoUrl || '../../../../../assets/img/logo/black-logo.png'" alt="full-logo-light" />
+        }
+      </div>
+      <button
+        type="button"
+        class="trade-login__theme"
+        (click)="toggleTheme($event)"
+        [attr.aria-label]="sharedservice.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span class="trade-login__theme-icon" [class.trade-login__theme-icon--active]="!sharedservice.isDarkMode">
+          <i class="fa-regular fa-sun-bright" aria-hidden="true"></i>
+        </span>
+        <span class="trade-login__theme-icon" [class.trade-login__theme-icon--active]="sharedservice.isDarkMode">
+          <i class="fa-regular fa-moon" aria-hidden="true"></i>
+        </span>
+      </button>
+    </header>
+
+    <div class="trade-login__grid">
+      <aside class="trade-login__hero">
+        <img
+          src="assets/img/login/mobile-login.webp"
+          alt=""
+          class="trade-login__mobile-art"
+          width="280"
+          height="220" />
+
+        <div class="trade-login__mobile-copy">
+          <p class="trade-login__badge">
+            <i class="fa-light fa-shield-check" aria-hidden="true"></i>
+            Secure trading workspace
+          </p>
+
+          <h1 class="trade-login__headline">{{ heroHeadline }}</h1>
+          <p class="trade-login__lead">{{ heroLead }}</p>
+
+            <ul class="trade-login__features">
+            <li>
+            <span class="trade-login__feature-icon"><i class="fa-solid fa-check"></i></span>
+            Live markets &amp; portfolio overview
+          </li>
+          <li>
+            <span class="trade-login__feature-icon"><i class="fa-solid fa-check"></i></span>
+            Real-time positions &amp; P/L tracking
+          </li>
+          <li>
+            <span class="trade-login__feature-icon"><i class="fa-solid fa-check"></i></span>
+            Encrypted, secure platform access
+          </li>
+        </ul>
+
+        <div class="trade-login__stats">
+          <div class="trade-login__stat">
+            <span class="trade-login__stat-value">24/7</span>
+            <span class="trade-login__stat-label">Market access</span>
+          </div>
+          <div class="trade-login__stat">
+            <span class="trade-login__stat-value">100%</span>
+            <span class="trade-login__stat-label">Secure login</span>
+          </div>
+          </div>
+        </div>
+      </aside>
+
+      <nav class="trade-login__mobile-actions" aria-label="Account actions">
+        <button
+          type="button"
+          class="trade-login__mobile-btn trade-login__mobile-btn--login"
+          [class.trade-login__mobile-btn--active]="authMode === 'login' && mobileSheetOpen"
+          (click)="openMobileSheet('login')">
+          Login
+        </button>
+        <button
+          type="button"
+          class="trade-login__mobile-btn trade-login__mobile-btn--register"
+          [class.trade-login__mobile-btn--active]="authMode === 'register' && mobileSheetOpen"
+          (click)="openMobileSheet('register')">
+          Register
+        </button>
+      </nav>
+
+      <section class="trade-login__panel" aria-label="Account access">
+        <div class="trade-login__card-shell">
+          <div class="trade-login__sheet-handle" aria-hidden="true"></div>
+          <button type="button" class="trade-login__sheet-close" (click)="closeMobileSheet()" aria-label="Close">
+            <i class="fa-light fa-xmark" aria-hidden="true"></i>
+          </button>
+
+          <div class="trade-login__sheet-body">
+          <div class="trade-login__card trade-login__card--login" *ngIf="authMode === 'login'">
+            <div class="trade-login__card-head">
+              <h2 class="trade-login__card-title">Welcome back</h2>
+              <p class="trade-login__card-sub">Enter your credentials to continue</p>
+            </div>
+
+            <div class="trade-login__field">
+              <label class="trade-login__label" for="userName">Username</label>
+              <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="error && !loginModel.username">
+                <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-user"></i></span>
+                <input
+                  id="userName"
+                  name="userName"
+                  class="trade-login__input"
+                  type="text"
+                  autocomplete="username"
+                  placeholder="Enter username"
+                  [(ngModel)]="loginModel.username"
+                  [ngModelOptions]="{ standalone: true }" />
+              </div>
+            </div>
+
+            <div class="trade-login__field">
+              <label class="trade-login__label" for="password">Password</label>
+              <div class="trade-login__input-wrap">
+                <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-lock"></i></span>
+                <input
+                  id="password"
+                  name="password"
+                  class="trade-login__input trade-login__input--password"
+                  [type]="passVisible ? 'text' : 'password'"
+                  autocomplete="current-password"
+                  placeholder="Enter password"
+                  [(ngModel)]="loginModel.password"
+                  [ngModelOptions]="{ standalone: true }"
+                  (keypress)="getEnterEvent($event)" />
+                <button
+                  type="button"
+                  class="trade-login__eye"
+                  (click)="passVisible = !passVisible"
+                  [attr.aria-label]="passVisible ? 'Hide password' : 'Show password'">
+                  @if(passVisible){
+                    <span><i class="fa-light fa-eye"></i></span>
+                  }@else{
+                    <span><i class="fa-light fa-eye-slash"></i></span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <label class="trade-login__remember">
+              <input type="checkbox" class="trade-login__checkbox" [(ngModel)]="rememberMe" [ngModelOptions]="{ standalone: true }" />
+              <span>Remember me</span>
+            </label>
+
+            <button type="button" class="trade-login__submit" (click)="login()" [disabled]="isLoginClicked">
+              <ng-container *ngIf="!isLoginClicked; else loginLoadingTpl">
+                Sign in
+                <span><i class="fa-light fa-arrow-right" aria-hidden="true"></i></span>
+              </ng-container>
+              <ng-template #loginLoadingTpl>
+                <span class="trade-login__spinner" role="status" aria-label="Signing in"></span>
+              </ng-template>
+            </button>
+
+            <div class="trade-login__error" *ngIf="error" role="alert">
+              <span class="trade-login__error-icon" aria-hidden="true">
+                <span><i class="fa-light fa-triangle-exclamation"></i></span>
+              </span>
+              <span class="trade-login__error-text">
+                <strong>Login failed</strong>
+                {{ error }}
+              </span>
+            </div>
+
+            <p class="trade-login__switch">
+              Don&apos;t have an account?
+              <button type="button" class="trade-login__link" (click)="showRegister()">Register now</button>
+            </p>
+          </div>
+
+          <div class="trade-login__card trade-login__card--register" *ngIf="authMode === 'register'">
+            <form class="trade-login__register-form" [formGroup]="registerForm" (ngSubmit)="createAccount()" novalidate>
+              <div class="trade-login__card-head">
+                <h2 class="trade-login__card-title">Create account</h2>
+                <p class="trade-login__card-sub">Start your trading journey in minutes</p>
+              </div>
+
+              <div class="trade-login__field">
+                <label class="trade-login__label" for="regName">Full name</label>
+                <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="registerInvalid('name')">
+                  <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-user"></i></span>
+                  <input id="regName" class="trade-login__input" type="text" formControlName="name" autocomplete="name" placeholder="Your name" />
+                </div>
+                <p class="trade-login__field-msg trade-login__field-msg--err" *ngIf="registerError('name') as e">{{ e }}</p>
+              </div>
+
+              <div class="trade-login__field">
+                <label class="trade-login__label" for="regEmail">Email address</label>
+                <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="registerInvalid('email')">
+                  <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-envelope"></i></span>
+                  <input id="regEmail" class="trade-login__input" type="email" formControlName="email" autocomplete="email" placeholder="you@company.com" />
+                </div>
+                <p class="trade-login__field-msg trade-login__field-msg--err" *ngIf="registerError('email') as e">{{ e }}</p>
+              </div>
+
+              <div class="trade-login__field">
+                <label class="trade-login__label" for="regMobile">Mobile number</label>
+                <div class="trade-login__phone-row" [class.trade-login__phone-row--invalid]="registerInvalid('mobile')">
+                  <div class="trade-login__dial-wrap">
+                    <button
+                      type="button"
+                      class="trade-login__dial-btn"
+                      (click)="toggleCountryDropdown($event)"
+                      [attr.aria-expanded]="countryDialOpen"
+                      aria-haspopup="listbox">
+                      <span class="trade-login__dial-code">{{ dialDisplay }}</span>
+                      <i class="fa-light fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    @if (countryDialOpen) {
+                      <div class="trade-login__dial-menu" (click)="$event.stopPropagation()">
+                        <div class="trade-login__dial-search-wrap">
+                          <i class="fa-light fa-magnifying-glass" aria-hidden="true"></i>
+                          <input
+                            type="search"
+                            class="trade-login__dial-search"
+                            placeholder="Search country"
+                            [(ngModel)]="countrySearch"
+                            [ngModelOptions]="{ standalone: true }"
+                            (click)="$event.stopPropagation()" />
+                        </div>
+                        <ul class="trade-login__dial-list" role="listbox">
+                          @for (c of filteredCountries; track c.dialCode + c.name) {
+                            <li>
+                              <button
+                                type="button"
+                                class="trade-login__dial-option"
+                                [class.trade-login__dial-option--active]="c.dialCode === selectedDialCode"
+                                (click)="selectCountry(c, $event)"
+                                role="option">
+                                <span class="trade-login__dial-option-name">{{ c.name }}</span>
+                                <span class="trade-login__dial-option-code">+{{ c.dialCode }}</span>
+                              </button>
+                            </li>
+                          }
+                          @if (!filteredCountries.length) {
+                            <li class="trade-login__dial-empty">No country found</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  </div>
+                  <input
+                    id="regMobile"
+                    class="trade-login__phone-input"
+                    type="tel"
+                    formControlName="mobile"
+                    inputmode="numeric"
+                    autocomplete="tel-national"
+                    placeholder="Mobile number" />
+                </div>
+                <p class="trade-login__field-msg trade-login__field-msg--err" *ngIf="registerError('mobile') as e">{{ e }}</p>
+              </div>
+
+              <div class="trade-login__field">
+                <label class="trade-login__label" for="regPassword">Password</label>
+                <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="registerInvalid('password')">
+                  <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-lock"></i></span>
+                  <input
+                    id="regPassword"
+                    class="trade-login__input trade-login__input--password"
+                    [type]="regPassVisible ? 'text' : 'password'"
+                    formControlName="password"
+                    autocomplete="new-password"
+                    placeholder="Create password" />
+                  <button type="button" class="trade-login__eye" (click)="regPassVisible = !regPassVisible">
+                    <i class="fa-light" [ngClass]="regPassVisible ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <p class="trade-login__field-msg trade-login__field-msg--hint">Min 8 chars with upper, lower and number</p>
+                <p class="trade-login__field-msg trade-login__field-msg--err" *ngIf="registerError('password') as e">{{ e }}</p>
+              </div>
+
+              <div class="trade-login__field">
+                <label class="trade-login__label" for="regConfirm">Confirm password</label>
+                <div class="trade-login__input-wrap" [class.trade-login__input-wrap--invalid]="registerInvalid('confirmPassword')">
+                  <span class="trade-login__input-icon" aria-hidden="true"><i class="fa-light fa-lock-keyhole"></i></span>
+                  <input
+                    id="regConfirm"
+                    class="trade-login__input trade-login__input--password"
+                    [type]="regConfirmPassVisible ? 'text' : 'password'"
+                    formControlName="confirmPassword"
+                    autocomplete="new-password"
+                    placeholder="Confirm password" />
+                  <button type="button" class="trade-login__eye" (click)="regConfirmPassVisible = !regConfirmPassVisible">
+                    @if(regConfirmPassVisible){
+                      <span><i class="fa-light fa-eye"></i></span>
+                    }@else{
+                      <span><i class="fa-light fa-eye-slash"></i></span>
+                    }
+                  </button>
+                </div>
+                <p class="trade-login__field-msg trade-login__field-msg--err" *ngIf="registerError('confirmPassword') as e">{{ e }}</p>
+              </div>
+
+              <button type="submit" class="trade-login__submit trade-login__submit--register">
+                Create account
+                <span><i class="fa-light fa-arrow-right" aria-hidden="true"></i></span>
+              </button>
+
+              <p class="trade-login__switch">
+                Already have an account?
+                <button type="button" class="trade-login__link" (click)="showLogin()">Sign in</button>
+              </p>
+            </form>
+          </div>
+
+          </div>
+
+          <p class="trade-login__footer" *ngIf="sharedservice.brandName">
+            &copy; {{ sharedservice.brandName }}
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

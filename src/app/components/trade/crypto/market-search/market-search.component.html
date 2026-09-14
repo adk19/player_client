@@ -1,0 +1,104 @@
+<div class="market-search-container">
+  <!-- Header -->
+  <div class="search-header">
+    @if (viewMode === 'market-types') {
+    <div class="header-title">Markets</div>
+    } @else if (viewMode === 'market-list') {
+    <div class="header-with-back">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fa-light fa-arrow-left"></i>
+      </button>
+      <div class="header-title">{{ selectedMarketType }}</div>
+    </div>
+    } @else if (viewMode === 'search-results') {
+    <div class="header-with-back">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fa-light fa-arrow-left"></i>
+      </button>
+      <div class="header-title">Search Results</div>
+    </div>
+    }
+    <button class="close-btn" (click)="closeSearch()">
+      <i class="fa-light fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Search Input -->
+  <div class="search-input-container">
+    <div class="search-input-wrapper">
+      <span class="search-icon"><i class="fa-light fa-magnifying-glass"></i></span>
+      <input type="text" placeholder="Search symbol or market name" [(ngModel)]="searchText"
+        (ngModelChange)="onSearchTextChange()" autofocus />
+      @if (searchText) {
+      <button class="clear-btn" (click)="searchText = ''; onSearchTextChange()">
+        <i class="fa-light fa-xmark"></i>
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="search-content">
+    @if (viewMode === 'market-types') {
+    <!-- Market Types List -->
+    <div class="market-types-list">
+      @for (type of marketTypes; track type.type) {
+      <div class="market-type-row" (click)="selectMarketType(type.type)">
+        <div class="market-type-info">
+          <div class="market-type-name">{{ type.type }}</div>
+        </div>
+        <div class="market-type-count">
+          <span class="count-text">{{ getWatchlistCount(type.type) }}/{{ getMarketCount(type.type) }}</span>
+          <i class="fa-light fa-chevron-right"></i>
+        </div>
+      </div>
+      }
+    </div>
+    } @else if (viewMode === 'market-list' && selectedMarketType) {
+    <!-- Market List for Selected Type -->
+    <div class="market-list">
+      @for (market of (markets[selectedMarketType] || []); track market.market) {
+      <div class="market-row">
+        <div class="market-info">
+          <div class="market-symbol">{{ market.market }}</div>
+          <div class="market-exchange">{{ getMarketExchangeName(market.exchange) }}</div>
+        </div>
+        <button class="add-remove-btn" (click)="toggleMarketInWatchlist(market)">
+          @if (isMarketInWatchlist(market.market)) {
+          <i class="fa-solid fa-check"></i>
+          } @else {
+          <i class="fa-solid fa-plus"></i>
+          }
+        </button>
+      </div>
+      }
+    </div>
+    } @else if (viewMode === 'search-results') {
+    <!-- Search Results -->
+    <div class="market-list">
+      @if (filteredMarkets.length === 0) {
+      <div class="no-results">
+        <div class="no-results-icon"><i class="fa-light fa-search"></i></div>
+        <div class="no-results-text">No markets found</div>
+      </div>
+      } @else {
+      @for (market of filteredMarkets; track market.market) {
+      <div class="market-row">
+        <div class="market-info">
+          <div class="market-symbol">{{ market.market }}</div>
+          <div class="market-exchange">{{ getMarketExchangeName(market.exchange) }}</div>
+        </div>
+        <button class="add-remove-btn" (click)="toggleMarketInWatchlist(market)">
+          @if (isMarketInWatchlist(market.market)) {
+          <i class="fa-solid fa-check"></i>
+          } @else {
+          <i class="fa-solid fa-plus"></i>
+          }
+        </button>
+      </div>
+      }
+      }
+    </div>
+    }
+  </div>
+</div>

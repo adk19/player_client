@@ -1,0 +1,410 @@
+<div class="watchlist-container">
+  <!-- ── Watchlist Toolbar (Visible everywhere including inside Trade Page on PC) ── -->
+  <div class="wl-toolbar">
+    <!-- Edit button -->
+    <button class="wl-toolbar-btn" (click)="toggleEditMode()" [class.active]="isEditMode" title="Edit">
+      <i class="fa-light fa-pen"></i>
+    </button>
+
+    <!-- Center: Search (stays mounted so focus is not lost when panel opens) -->
+    <div class="search-bar-container wl-toolbar-search" [class.wl-toolbar-search--active]="isSearchExpanded">
+      <div class="search-bar">
+        <span class="search-icon"><i class="fa-light fa-magnifying-glass"></i></span>
+        <input #searchInput type="text"
+          [placeholder]="isSearchExpanded && searchView === 'market-list' ? 'Search in ' + selectedMarketType : 'Search symbol'"
+          [(ngModel)]="searchText"
+          (mousedown)="onSearchClick()"
+          (focus)="onSearchFocus()"
+          (blur)="onSearchBlur()"
+          (ngModelChange)="onSearchTextChange()" />
+        @if (isSearchExpanded) {
+        <button type="button" class="wl-search-clear" (click)="closeSearch(); $event.stopPropagation()"
+          title="Close search" aria-label="Close search">
+          <i class="fa-light fa-xmark"></i>
+        </button>
+        }
+      </div>
+    </div>
+
+    <button class="wl-toolbar-btn wl-toolbar-toggle" type="button" (click)="toggleWatchlistView()"
+      [title]="watchlistView === 'simple' ? 'Switch to Advanced' : 'Switch to Simple'">
+      @if (watchlistView === 'simple') {
+      <span><i class="fa-light fa-table-columns"></i></span>
+      } @else {
+      <span><i class="fa-light fa-list"></i></span>
+      }
+    </button>
+  </div>
+
+  <div class="watchlist-content">
+    @if (!isSearchExpanded) {
+    @if (watchlist.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fa-light fa-list"></i></div>
+      <div class="empty-text">No symbols added. Tap search to add markets</div>
+    </div>
+    } @else {
+    <!-- ── Advanced MT5 View ── -->
+    @if (watchlistView === 'advanced') {
+    <div class="wl-mt5-list">
+      @for (market of watchlist; track market.symbol) {
+      <div class="wl-mt5-row" [class.selected]="selectedSymbol === market.symbol"
+        [class.price-up]="getFlashDir(market) === 'up'" [class.price-down]="getFlashDir(market) === 'down'"
+        (click)="!isEditMode && selectSymbol(market.symbol)">
+
+        <!-- Edit mode: checkbox -->
+        @if (isEditMode) {
+        <button class="wl-remove-btn" (click)="$event.stopPropagation(); removeFromWatchlistBySymbol(market.symbol)">
+          <i class="fa-solid fa-minus-circle"></i>
+        </button>
+        }
+
+        <!-- Left: symbol info -->
+        <div class="wl-mt5-left">
+          <div class="wl-mt5-meta">
+            <!-- <span class="status-dot" [class.open]="market.isMarketOpen" [class.closed]="!market.isMarketOpen"></span> -->
+            <span class="wl-mt5-symbol text-truncate">{{ market.symbol }}</span>
+          </div>
+          <!-- <div class="wl-mt5-spread">
+                    Spread: {{ getSpread(market) }}
+                  </div> -->
+          <div class="wl-mt5-lowhigh text-truncate">
+            <span>{{ market.company_name ? market.company_name : market.description ? market.description :
+              market.market_type }}</span>
+          </div>
+        </div>
+
+        <!-- Center: Bid -->
+        <div class="wl-mt5-price-col">
+          <!-- <div class="wl-mt5-label">Sell</div> -->
+          @if (!tickerReady || market.bid === null) {
+          <span class="sk-cell"></span>
+          } @else {
+          <div class="wl-mt5-price" [ngClass]="market.dailyChange >= 0 ? 'wl-price-blue' : 'wl-price-red'">
+            <span class="wl-price-main">{{ splitPrice(market.bid).main }}</span>
+            <span class="wl-price-main-last-two">{{ splitPrice(market.bid).lastTwo }}</span>
+            <!-- <sup class="wl-price-last">{{ splitPrice(market.bid).last }}</sup> -->
+          </div>
+          <div class="wl-mt5-lowhigh text-truncate">
+            <span>Low: {{ market.low ? formatPrice(market.low) : '—' }}</span>
+          </div>
+          }
+        </div>
+
+        <!-- Right: Ask -->
+        <div class="wl-mt5-price-col">
+          <!-- <div class="wl-mt5-label">Buy</div> -->
+          @if (!tickerReady || market.ask === null) {
+          <span class="sk-cell"></span>
+          } @else {
+          <div class="wl-mt5-price" [ngClass]="market.dailyChange >= 0 ? 'wl-price-blue' : 'wl-price-red'">
+            <span class="wl-price-main">{{ splitPrice(market.ask).main }}</span>
+            <span class="wl-price-main-last-two">{{ splitPrice(market.ask).lastTwo }}</span>
+            <!-- <sup class="wl-price-last">{{ splitPrice(market.ask).last }}</sup> -->
+          </div>
+          <div class="wl-mt5-lowhigh text-truncate">
+            <span>High: {{ market.high ? formatPrice(market.high) : '—' }}</span>
+          </div>
+          }
+        </div>
+
+      </div>
+      }
+    </div>
+    }
+
+    @if (watchlistView === 'simple') {
+    <div class="watchlist-table">
+      @if (!tickerReady) {
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="symbol-th">Symbol</th>
+            <th class="price-th">Bid</th>
+            <th class="price-th">Ask</th>
+            <th class="change-th">Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (market of watchlist; track market.symbol) {
+          <tr class="market-row">
+            <td class="symbol-td">
+              <div class="symbol-row">
+                <!-- <span class="status-dot" [class.open]="market.isMarketOpen" [class.closed]="!market.isMarketOpen"></span> -->
+                <span class="symbol-name">{{ market.symbol }}</span>
+              </div>
+            </td>
+            <td class="price-td"><span class="sk-cell"></span></td>
+            <td class="price-td"><span class="sk-cell"></span></td>
+            <td class="change-td"><span class="sk-cell sk-cell-sm"></span></td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="symbol-th">Symbol</th>
+            <th class="price-th">Bid</th>
+            <th class="price-th">Ask</th>
+            <th class="change-th">Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (market of watchlist; track market.symbol) {
+          <tr class="market-row" [class.selected]="selectedSymbol === market.symbol"
+            (click)="!isEditMode && selectSymbol(market.symbol)">
+            <td class="symbol-td">
+              <div class="symbol-row">
+                @if (isEditMode) {
+                <button class="wl-remove-btn-sm"
+                  (click)="$event.stopPropagation(); removeFromWatchlistBySymbol(market.symbol)">
+                  <i class="fa-solid fa-minus-circle"></i>
+                </button>
+                }
+                <!-- <span class="status-dot" [class.open]="market.isMarketOpen" [class.closed]="!market.isMarketOpen"></span> -->
+                <span class="symbol-name">{{ market.symbol }}</span>
+              </div>
+            </td>
+            <td class="price-td">{{ market.bid | number:'1.2-2' }}</td>
+            <td class="price-td">{{ market.ask | number:'1.2-2' }}</td>
+            <td class="change-td" [ngClass]="market.dailyChange >= 0 ? 'green-color' : 'red-color'">
+              {{ formatPercentage(market.dailyChange) }}
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+    }
+    }
+    } @else {
+    <!-- Expanded browse / search results (input stays in toolbar) -->
+    @if (searchView === 'market-types') {
+    <div class="market-types-list">
+      <div class="search-header">
+        <div class="header-title">Select Market</div>
+        <button class="close-btn" (click)="closeSearch()">
+          <i class="fa-light fa-xmark"></i>
+        </button>
+      </div>
+      @for (group of pathGroups; track group.fullPath) {
+      <div class="market-type-row" (click)="selectMarketType(group.name)">
+        <div class="market-type-info">
+          <div class="market-type-name">{{ group.name }}</div>
+        </div>
+        <div class="market-type-count">
+          <span class="count-text">{{ group.watchlistCount || 0 }} / {{ group.totalSymbols || 0 }}</span>
+          <span><i class="fa-light fa-chevron-right"></i></span>
+        </div>
+      </div>
+      }
+    </div>
+    } @else if (searchView === 'market-list' && selectedMarketType) {
+    <div class="market-list">
+      <div class="search-header">
+        <button class="back-btn" (click)="goBack()">
+          <i class="fa-light fa-arrow-left"></i>
+        </button>
+        <div class="header-title">{{ selectedMarketType }}</div>
+        <button class="close-btn" (click)="closeSearch()">
+          <i class="fa-light fa-xmark"></i>
+        </button>
+      </div>
+
+      @if (isMarketListLoading) {
+      <div class="market-skeleton">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+        <div class="skeleton-row">
+          <div class="sk-left">
+            <div class="sk-line w-60"></div>
+            <div class="sk-line w-35"></div>
+          </div>
+          <div class="sk-btn"></div>
+        </div>
+        }
+      </div>
+      } @else {
+      <div #marketListScroller class="market-list-scroll" (scroll)="onMarketListScroll($event)">
+        <!-- Hierarchical Folders -->
+        @if (filteredHierarchy.length > 0) {
+        <div class="market-hierarchy">
+          @for (group of filteredHierarchy; track group.fullPath) {
+          <ng-container *ngTemplateOutlet="groupTemplate; context: { $implicit: group }"></ng-container>
+          }
+        </div>
+        }
+
+        <!-- Symbols at this level (Flat fallback only when no hierarchy) -->
+        @if (filteredHierarchy.length === 0 && visibleMarkets.length > 0) {
+        <div class="flat-markets">
+          @for (market of visibleMarkets; track market.market_id) {
+          <div class="market-row">
+            <div class="market-info">
+              <div class="market-symbol">{{ market.market }}</div>
+              <div class="market-exchange">{{ market.description || getMarketExchangeName(market.exchange) }}</div>
+            </div>
+            <button class="add-remove-btn"
+              (click)="toggleMarketInWatchlist(market, selectedMarketType); $event.stopPropagation()">
+              @if (isMarketInWatchlist(market.market)) {
+              <span><i class="fa-solid fa-circle-check"></i></span>
+              } @else {
+              <span><i class="fa-solid fa-plus"></i></span>
+              }
+            </button>
+          </div>
+          }
+
+          @if (canLoadMoreFlatMarkets()) {
+          <div class="load-more-row">
+            <button class="load-more-btn" (click)="loadMoreFlatMarkets(); $event.stopPropagation()">
+              Load more
+            </button>
+          </div>
+          }
+        </div>
+        }
+
+        @if (filteredHierarchy.length === 0 && visibleMarkets.length === 0) {
+        <div class="no-results">
+          <div class="no-results-icon"><i class="fa-light fa-magnifying-glass"></i></div>
+          <div class="no-results-text">No markets found</div>
+          <div class="no-results-subtext">Try a different search or clear the filter.</div>
+          <div class="no-results-actions">
+            <button class="no-results-btn" (click)="searchText=''; onSearchTextChange(); $event.stopPropagation()">Clear
+              search</button>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    } @else if (searchView === 'search-results') {
+    <div class="market-list">
+      <div class="search-header">
+        <button class="back-btn" (click)="goBack()">
+          <i class="fa-light fa-arrow-left"></i>
+        </button>
+        <div class="header-title">Search Results</div>
+        <button class="close-btn" (click)="closeSearch()">
+          <i class="fa-light fa-xmark"></i>
+        </button>
+      </div>
+
+      @if (isSearchResultsLoading) {
+      <div class="market-skeleton">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+        <div class="skeleton-row">
+          <div class="sk-left">
+            <div class="sk-line w-60"></div>
+            <div class="sk-line w-35"></div>
+          </div>
+          <div class="sk-btn"></div>
+        </div>
+        }
+      </div>
+      } @else if (filteredMarkets.length === 0) {
+      <div class="no-results">
+        <div class="no-results-icon"><i class="fa-light fa-magnifying-glass"></i></div>
+        <div class="no-results-text">No markets found</div>
+        <div class="no-results-subtext">Try a different symbol, or go back to browse.</div>
+        <div class="no-results-actions">
+          <button class="no-results-btn secondary" (click)="goBack(); $event.stopPropagation()">Browse markets</button>
+          <button class="no-results-btn" (click)="searchText=''; onSearchTextChange(); $event.stopPropagation()">Clear
+            search</button>
+        </div>
+      </div>
+      } @else {
+      <div #searchResultsScroller class="market-list-scroll" (scroll)="onSearchResultsScroll($event)">
+        @for (market of visibleFilteredMarkets; track market.market) {
+        <div class="market-row">
+          <div class="market-info">
+            <div class="symbol-name-row">
+              <!-- @if (isMarketInWatchlist(market.market)) {
+                        <span class="status-dot" [class.open]="isMarketOpen(market.market)" [class.closed]="!isMarketOpen(market.market)"></span>
+                      } -->
+              <div class="market-symbol">{{ market.market }}</div>
+            </div>
+            <div class="market-exchange">{{ market.description || getMarketExchangeName(market.exchange) || '-' }}</div>
+          </div>
+          <button class="add-remove-btn"
+            (click)="toggleMarketInWatchlist(market, market.exchange); $event.stopPropagation()">
+            @if (isMarketInWatchlist(market.market)) {
+            <span><i class="fa-solid fa-circle-check"></i></span>
+            } @else {
+            <span><i class="fa-solid fa-plus"></i></span>
+            }
+          </button>
+        </div>
+        }
+
+        @if (canLoadMoreSearchResults()) {
+        <div class="load-more-row">
+          <button class="load-more-btn" (click)="loadMoreSearchResults(); $event.stopPropagation()">
+            Load more
+          </button>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+    }
+  </div>
+</div>
+
+<!-- Recursive Group Template -->
+<ng-template #groupTemplate let-group>
+  <div class="group-item">
+    <div class="group-header" (click)="toggleGroup(group.fullPath)">
+      <div class="group-info">
+        <span class="chevron" [class.expanded]="isGroupExpanded(group.fullPath)">
+          <i class="fa-light fa-chevron-right"></i>
+        </span>
+        <!-- <span class="folder-icon"><i class="fa-solid fa-folder"></i></span> -->
+        <span class="group-name">{{ group.name }}</span>
+      </div>
+      <div class="group-count">{{ group.totalSymbols }}</div>
+    </div>
+
+    @if (isGroupExpanded(group.fullPath)) {
+    <div class="group-children">
+      <!-- Sub-groups -->
+      @for (child of group.children; track child.fullPath) {
+      <ng-container *ngTemplateOutlet="groupTemplate; context: { $implicit: child }"></ng-container>
+      }
+
+      <!-- Symbols in this group -->
+      @if (group.symbols?.length) {
+      @for (market of getGroupVisibleSymbols(group); track market.market_id) {
+      <div class="market-row symbol-item" [style.padding-left.px]="(group.level + 1) * 12">
+        <div class="market-info">
+          <div class="market-symbol">{{ market.market }}</div>
+          <div class="market-exchange">{{ market.description || getMarketExchangeName(market.exchange) }}</div>
+        </div>
+
+        <button class="add-remove-btn"
+          (click)="toggleMarketInWatchlist(market, selectedMarketType); $event.stopPropagation()">
+          @if (isMarketInWatchlist(market.market)) {
+          <span><i class="fa-solid fa-circle-check"></i></span>
+          } @else {
+          <span><i class="fa-solid fa-plus"></i></span>
+          }
+        </button>
+      </div>
+      }
+
+      @if (canLoadMoreInGroup(group)) {
+      <div class="load-more-row" [style.padding-left.px]="(group.level + 1) * 12">
+        <button class="load-more-btn" (click)="loadMoreInGroup(group); $event.stopPropagation()">
+          Load more
+        </button>
+      </div>
+      }
+      }
+    </div>
+    }
+  </div>
+</ng-template>

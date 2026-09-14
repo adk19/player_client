@@ -1,0 +1,37 @@
+<div class="sitemap-container">
+  <div class="sitemap-header">
+    <div class="sitemap-header-title">
+      <i class="fa-light fa-sitemap sitemap-main-icon"></i>
+      <div>
+        <h1>Platform Sitemap</h1>
+        <p class="hsub">An interactive map of all available pages, trading screens, and account configurations.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sitemap-sections-grid">
+    <div class="sitemap-section" *ngFor="let section of sections">
+      <div class="sitemap-section-header">
+        <i class="fa-light" [class]="'fa-' + section.icon"></i>
+        <h2>{{ section.title }}</h2>
+      </div>
+
+      <div class="sitemap-items-list">
+        <a [routerLink]="item.url" class="sitemap-item-card" *ngFor="let item of section.items">
+          <div class="sitemap-item-left">
+            <div class="sitemap-item-icon">
+              <i class="fa-light" [class]="'fa-' + item.icon"></i>
+            </div>
+            <div class="sitemap-item-info">
+              <span class="sitemap-item-name">{{ item.name }}</span>
+              <p class="sitemap-item-desc">{{ item.description }}</p>
+            </div>
+          </div>
+          <div class="sitemap-item-right">
+            <i class="fa-light fa-chevron-right sitemap-arrow"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

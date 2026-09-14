@@ -1,0 +1,186 @@
+<div class="settlement-history-page">
+  <div class="settlement-history-shell">
+
+    <div class="page-header page-header--premium">
+      <div class="page-header-inner">
+        <div class="page-header-left">
+          <div class="ph-kicker">Account · Settlement</div>
+          <h1 class="page-title">Settlement History</h1>
+          <p class="page-subtitle">
+            Review settlement records — amounts settled, type, and approval details.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-back" (click)="goBack()">
+            <i class="fa-light fa-arrow-left"></i>
+            <span>Back</span>
+          </button>
+          <button type="button" class="btn btn-refresh" (click)="refresh()">
+            <i class="fa-light fa-rotate-right"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="filter-date-group">
+        <input type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" />
+        <span class="date-sep">—</span>
+        <input type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" />
+      </div>
+
+      @if (hasFilters) {
+      <button class="btn-clear" (click)="clearFilters()">
+        <i class="fa-light fa-xmark"></i> Clear
+      </button>
+      }
+    </div>
+
+    @if (loading) {
+    <div class="metrics-grid metrics-grid--two">
+      <div class="metric-card sk-card" *ngFor="let i of [1,2]">
+        <div class="sk sk-label"></div>
+        <div class="sk sk-value"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="sk sk-label"></div>
+      </div>
+      <div class="sk-rows">
+        <div class="sk sk-row" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+    </div>
+    }
+
+    @if (!loading && error) {
+    <div class="settlement-history-error">
+      <i class="fa-light fa-circle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button class="btn btn-primary" (click)="refresh()">
+        <i class="fa-light fa-rotate-right"></i> Retry
+      </button>
+    </div>
+    }
+
+    @if (!loading && !error) {
+    @if (totals) {
+    <div class="metrics-grid" [class.metrics-grid--two]="hasNetPending()">
+      <div class="metric-card">
+        <div class="metric-label">Net Settled</div>
+        <div class="metric-value val-positive">{{ brandFmt(totals.net_settled) }}</div>
+        <div class="metric-desc">Total amount settled in this period</div>
+      </div>
+      @if (hasNetPending()) {
+      <div class="metric-card">
+        <div class="metric-label">Net Pending</div>
+        <div class="metric-value">{{ brandFmt(totals.net_pending) }}</div>
+        <div class="metric-desc">Remaining pending after settlements</div>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <i class="fa-light fa-clock-rotate-left"></i>
+          <span>Settlement Entries</span>
+          <span class="count-badge">{{ total }}</span>
+        </div>
+      </div>
+
+      <div class="table-wrap settlement-history-table-wrap">
+        @if (rows.length) {
+        <table class="settlement-history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th class="right">Amount Settled</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of rows; trackBy: trackByRow">
+              <td class="date-cell">{{ fmtDate(r.created_at) }}</td>
+              <td>
+                <span class="settled-type-badge" [ngClass]="settledTypeClass(r.settlement_type)">
+                  {{ enumLabel(r.settlement_type) }}
+                </span>
+              </td>
+              <td class="right amount-cell val-positive">{{ brandFmt(r.amount_settled) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        }@else {
+        <div class="no-data">
+          <i class="fa-light fa-inbox"></i>
+          <span>No settlement history found</span>
+          @if (hasFilters) {
+          <span class="no-data-sub">Try adjusting the date range</span>
+          }
+        </div>
+        }
+      </div>
+
+      @if (total > 0) {
+      <div class="pagination-bar" [class.pagination-bar--one-page]="totalPages <= 1">
+        <div class="pagination-bar-left">
+          <label class="limit-lbl" for="sh-limit">Per page</label>
+          <select id="sh-limit" class="limit-select" [(ngModel)]="limit" (ngModelChange)="onLimitChange()">
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+            <option [ngValue]="100">100</option>
+          </select>
+        </div>
+
+        <div class="pagination-bar-center">
+          <span class="pg-range" aria-live="polite">
+            <span class="pg-range-nums">
+              <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
+            </span>
+            <span class="pg-of">of</span>
+            <strong class="pg-total-count">{{ total }}</strong>
+            <span class="pg-total-label">entries</span>
+          </span>
+        </div>
+
+        <div class="pagination-bar-right">
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage <= 1" (click)="prevPage()"
+            aria-label="Previous page">
+            <i class="fa-light fa-chevron-left"></i>
+            <span class="pg-nav-txt">Prev</span>
+          </button>
+
+          <div class="pg-numbers" *ngIf="totalPages > 1" role="navigation" aria-label="Pages">
+            @for (item of pageNumbersForView(); track item) {
+            @if (item === 'ellipsis') {
+            <span class="pg-ellipsis" aria-hidden="true">…</span>
+            }@else {
+            <button type="button" class="pg-num" [class.pg-num--active]="item === currentPage"
+              [disabled]="item === currentPage" (click)="goToPage($any(item))">
+              {{ item }}
+            </button>
+            }
+            }
+          </div>
+
+          @if (totalPages > 1) {
+          <span class="pg-mobile-page">Page {{ currentPage }} / {{ totalPages }}</span>
+          }
+
+          <button type="button" class="pg-btn pg-nav" [disabled]="currentPage >= totalPages" (click)="nextPage()"
+            aria-label="Next page">
+            <span class="pg-nav-txt">Next</span>
+            <i class="fa-light fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    }
+  </div>
+</div>

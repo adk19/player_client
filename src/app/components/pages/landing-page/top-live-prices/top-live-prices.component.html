@@ -1,0 +1,52 @@
+<div class="main-landing-price-box">
+    <div class="main-landing-price-box-ttl">
+        <div class="main-landing-price-box-tabs">
+            <div class="main-landing-price-box-single-tab" (click)="currentActive = 'Popular'"
+                [ngClass]="currentActive == 'Popular' ? 'active' : ''">Popular</div>
+            <div class="main-landing-price-box-single-tab" (click)="currentActive = 'New Listing'"
+                [ngClass]="currentActive == 'New Listing' ? 'active' : ''">New Listing</div>
+        </div>
+        <!-- @if(currentActive == 'Popular'){
+        <div class="main-landing-price-box-btn">
+            View All Coins <span><i class="fa-solid fa-chevron-right"></i></span>
+        </div>
+        }
+        @if(currentActive == 'New Listing'){
+        <div class="main-landing-price-box-btn">
+            View More Coins <span><i class="fa-solid fa-chevron-right"></i></span>
+        </div>
+        } -->
+    </div>
+    @if(currentActive == 'Popular'){
+        <table class="table">
+            @for (coin of coins; track coin.key) {
+                @if (['BTCUSDT','ETHUSDT','BNBUSDT','XRPUSDT','SOLUSDT'].includes(coin.key)) {
+                    <tr class="coin-row">
+                        <td class="name-td">
+                            <img [src]="'assets/coin/'+coin.key.replaceAll('USDT','')+'.png'" [alt]="coin.key.replaceAll('USDT','')">
+                            {{ coin.key.replaceAll('USDT','') }} <span>USDT</span>
+                        </td>
+                        <td class="prc-td">{{ coin.price || 0}}</td>
+                        <td class="change-td" [ngClass]="coin.change >= 0 ? 'green' : 'red'"> {{ coin.change }}% </td>
+                    </tr>
+                }
+            }
+        </table>
+    }
+    @if(currentActive == 'New Listing'){
+        <table class="table">
+            @for (coin of coins; track coin.key) {
+                @if (['SOMIUSDT','WLFIUSDT','MITOUSDT','DOLOUSDT','PLUMEUSDT'].includes(coin.key)) {
+                    <tr class="coin-row">
+                        <td class="name-td">
+                            <img [src]="'assets/coin/'+coin.key.replaceAll('USDT','')+'.png'" [alt]="coin.key.replaceAll('USDT','')">
+                            {{ coin.key.replaceAll('USDT','') }} <span>USDT</span>
+                        </td>
+                        <td class="prc-td">{{ coin.price || 0}}</td>
+                        <td class="change-td" [ngClass]="coin.change >= 0 ? 'green' : 'red'"> {{ coin.change }}% </td>
+                    </tr>
+                }
+            }
+        </table>
+    }
+</div>
