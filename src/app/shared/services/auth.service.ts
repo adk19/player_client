@@ -36,7 +36,6 @@ export interface AuthResponse {
 export interface PasswordResetResponse {
   code: number;
   message: string;
-  playerId?: number;
   data?: {
     username?: string;
     playerId?: number;
@@ -168,6 +167,7 @@ export class AuthService {
     } catch (e: any) {
       if (e?.name === 'QuotaExceededError' || e?.code === 22) {
         try {
+          sessionStorage.clear();
           sessionStorage.setItem(key, value);
         } catch {
           console.warn(`[AuthService] sessionStorage unavailable for "${key}"`);

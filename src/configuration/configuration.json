@@ -1,6 +1,6 @@
 {
   "environment": {
-    "api_url": "https://playerapi.bigtrade.cloud/api/",
+    "api_url": "http://localhost:7083/api/",
     "brand_code": "BRD0037",
     "crypto_api_url": "https://mapi.bigtrade.cloud/v1",
     "crypto_websocket_url": "https://bapi.bigtrade.cloud",

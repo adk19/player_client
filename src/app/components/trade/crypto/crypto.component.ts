@@ -1839,7 +1839,7 @@ export class CryptoComponent implements OnInit, OnDestroy {
     this.currentTime = new Date();
     const symbol = `${this.base}${this.quote}`;
 
-    const isCrypto = this.marketType === MarketType.CRYPTO || this.getMarketTypeFromSymbol(symbol) === MarketType.CRYPTO;
+    const isCrypto = this.getMarketTypeFromSymbol(symbol) === MarketType.CRYPTO;
     const url = isCrypto ? urlConstant.ticker24hr(symbol) : urlConstant.symbolInfo(symbol);
     this.http.get<any>(url).subscribe({
 
@@ -2222,9 +2222,9 @@ export class CryptoComponent implements OnInit, OnDestroy {
 
     // 3. Pattern fallback
     const u = symbol.toUpperCase();
+    if (/^XAU|^XAG/.test(u)) return MarketType.METAL;
     if (/[A-Z0-9]+(USDT|USDC|USD1|BUSD|FDUSD|DAI|TUSD|USDE|PERP|BTC|ETH|BNB|SOL|XRP|DOGE|ADA)$/i.test(u)) return MarketType.CRYPTO;
     if (/^[A-Z]{6}$/.test(u)) return MarketType.FOREX;
-    if (/^XAU|^XAG/.test(u)) return MarketType.METAL;
     if (/DOWJONES|NASDAQ|SP500/.test(u)) return MarketType.INDEX;
 
     // 4. Default — COMMODITY (MT5/HUB) for unknown

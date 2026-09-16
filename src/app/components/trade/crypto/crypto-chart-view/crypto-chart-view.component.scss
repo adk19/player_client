@@ -241,13 +241,17 @@
 
 @media (max-width: 992px) {
   .chart-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 6px;
-    padding: 4px 8px;
+    padding: 6px 8px;
 
     .left {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
       gap: 8px;
       flex-shrink: 0;
 
@@ -265,7 +269,11 @@
     }
 
     .chart-stats-strip {
-      padding-left: 8px;
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
+      padding-left: 0;
       gap: 0;
 
       .stat-item {
@@ -1034,6 +1042,7 @@ html.dark .chart-container::before {
     min-height: 46px;
     padding: 6px 10px !important;
     gap: 8px !important;
+    flex-wrap: wrap;
 
     .pair-info {
       gap: 7px !important;

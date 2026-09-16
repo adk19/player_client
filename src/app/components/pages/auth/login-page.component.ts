@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { SharedService } from '../../../shared/services/shared.service';
 import { environment } from '../../../shared/environment/environment';
@@ -22,6 +22,7 @@ export class LoginPageComponent {
   constructor(
     private readonly auth: AuthService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     public readonly sharedservice: SharedService
   ) {}
 
@@ -34,10 +35,10 @@ export class LoginPageComponent {
   login(): void {
     let errTxt = '';
     if (!this.loginModel.username) {
-      errTxt += 'Enter Username\n';
+      errTxt += 'Enter Username ';
     }
     if (!this.loginModel.password) {
-      errTxt += 'Please enter password\n';
+      errTxt += 'Please enter password';
     }
 
     if (errTxt) {
@@ -55,7 +56,7 @@ export class LoginPageComponent {
       brand_type: this.sharedservice.getBrandType() || ''
     };
 
-    const returnUrl = '/watchlist';
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/watchlist';
 
     this.auth.login(payload).subscribe({
       next: () => {
@@ -68,7 +69,6 @@ export class LoginPageComponent {
         const errorMsg =
           err?.error?.message || err?.message || 'Login failed. Please check your credentials.';
         this.sharedservice.showAlert(2, errorMsg);
-        console.error('Login error', err);
       }
     });
   }

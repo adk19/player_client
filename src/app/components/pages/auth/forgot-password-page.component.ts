@@ -215,7 +215,6 @@ export class ForgotPasswordPageComponent implements OnDestroy {
 
   private extractPlayerId(res: PasswordResetResponse): number | null {
     const raw =
-      res?.playerId ??
       res?.data?.playerId ??
       res?.data?.player_id ??
       res?.data?.id;

@@ -127,6 +127,7 @@ export class CryptoChartViewComponent
       low,
       close,
       changePct,
+      absoluteChange: close - open,
       amplitudePct: open > 0 ? ((high - low) / open) * 100 : 0,
       isUp: close >= open
     };
@@ -403,6 +404,7 @@ export class CryptoChartViewComponent
     close: number;
 
     changePct: number;
+    absoluteChange?: number;
     amplitudePct: number;
     isUp: boolean;
   };
@@ -565,7 +567,10 @@ export class CryptoChartViewComponent
     const curLeft = container.querySelector<HTMLElement>('.seg-indicator')?.style.left;
     const curWidth = container.querySelector<HTMLElement>('.seg-indicator')?.style.width;
     if (curLeft !== `${left}px` || curWidth !== `${width}px`) {
-      setter(`${left}px`, `${width}px`);
+      Promise.resolve().then(() => {
+        setter(`${left}px`, `${width}px`);
+        this.cdr.markForCheck();
+      });
     }
   }
 
@@ -1836,12 +1841,12 @@ export class CryptoChartViewComponent
     const priceEl = this.crosshairPriceLabel?.nativeElement;
     const timeEl = this.crosshairTimeLabel?.nativeElement;
 
-    console.log('[crosshair]', { priceEl: !!priceEl, timeEl: !!timeEl, point, price });
+
 
     // Price label on right Y-axis
     if (priceEl) {
       const yCoord = (this.candleSeries as any).priceToCoordinate?.(price);
-      console.log('[crosshair] yCoord:', yCoord);
+
       if (typeof yCoord === 'number' && isFinite(yCoord)) {
         const txt = price >= 1000
           ? price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -1849,10 +1854,10 @@ export class CryptoChartViewComponent
         priceEl.textContent = txt;
         priceEl.style.top = `${Math.round(yCoord)}px`;
         priceEl.style.display = '';
-        console.log('[crosshair] price label shown:', txt, 'at y:', yCoord);
+
       } else {
         priceEl.style.display = 'none';
-        console.log('[crosshair] priceToCoordinate returned null/invalid');
+
       }
     }
 
@@ -1860,7 +1865,7 @@ export class CryptoChartViewComponent
     if (timeEl) {
       const timeScale = this.chart.timeScale();
       const timeVal = timeScale.coordinateToTime(point.x);
-      console.log('[crosshair] coordinateToTime:', timeVal, 'point.x:', point.x);
+
       if (timeVal != null) {
         const ts = typeof timeVal === 'number' ? timeVal : (timeVal as any)?.timestamp ?? 0;
         const dt = new Date(ts * 1000);
@@ -1871,10 +1876,10 @@ export class CryptoChartViewComponent
         timeEl.textContent = timeStr;
         timeEl.style.left = `${Math.round(point.x)}px`;
         timeEl.style.display = '';
-        console.log('[crosshair] time label shown:', timeStr);
+
       } else {
         timeEl.style.display = 'none';
-        console.log('[crosshair] coordinateToTime returned null');
+
       }
     }
   }
@@ -3187,6 +3192,7 @@ export class CryptoChartViewComponent
       low: c.low,
       close: c.close,
       changePct,
+      absoluteChange: prevClose ? c.close - prevClose : c.close - c.open,
       amplitudePct,
       isUp: c.close >= c.open,
     };
@@ -3745,6 +3751,9 @@ export class CryptoChartViewComponent
     // symbolInfo (MT5): N = net change absolute
     if (!this.isCryptoMarketType && this.symbolInfoData?.N != null) {
       return Number(this.symbolInfoData.N);
+    }
+    if (this.infoBar && this.infoBar.absoluteChange != null) {
+      return this.infoBar.absoluteChange;
     }
     const o = this.singleTickerData?.o ?? this.infoBar?.open ?? this.pairDetail?.open;
     if (o == null) return 0;

@@ -5,7 +5,7 @@
   --acc-radius-sm: 8px;
   --acc-item-h: 40px;
 
-  min-height: calc(100dvh - 85px);
+  min-height: calc(100dvh - var(--app-chrome-h));
   background: var(--layout-bg);
   position: relative;
   overflow: hidden;
@@ -19,7 +19,7 @@
 .acc-menu-page {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 75px);
+  min-height: calc(100dvh - var(--app-chrome-h));
   padding: 12px;
   gap: 12px;
   background: var(--box-bg);
@@ -27,6 +27,12 @@
   transition:
     transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.22s ease;
+
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &.hidden {
     display: none;
@@ -128,7 +134,12 @@
   flex: 1;
   overflow: auto;
   padding: 2px 0 4px;
-  scrollbar-width: thin;
+
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .acc-menu-group {
@@ -333,7 +344,7 @@ html.dark .acc-menu-item {
 .acc-child-page {
   display: none;
   flex-direction: column;
-  min-height: calc(100dvh - 85px);
+  min-height: calc(100dvh - var(--app-chrome-h));
   background: var(--layout-bg);
 
   &.active {
@@ -394,19 +405,19 @@ html.dark .acc-menu-item {
 /* ── Small phones ───────────────────────────────────────────── */
 @media (max-width: 576px) {
   .acc-shell {
-    min-height: calc(100dvh - 125px);
-    height: calc(100dvh - 125px);
+    min-height: calc(100dvh - var(--app-chrome-h) - 50px);
+    height: calc(100dvh - var(--app-chrome-h) - 50px);
   }
 
   .acc-menu-page {
-    min-height: calc(100dvh - 125px);
-    height: calc(100dvh - 125px);
+    min-height: calc(100dvh - var(--app-chrome-h) - 50px);
+    height: calc(100dvh - var(--app-chrome-h) - 50px);
     border-right: none;
   }
 
   .acc-child-page {
-    min-height: calc(100dvh - 125px);
-    height: calc(100dvh - 125px);
+    min-height: calc(100dvh - var(--app-chrome-h) - 50px);
+    height: calc(100dvh - var(--app-chrome-h) - 50px);
   }
 }
 
@@ -421,8 +432,8 @@ html.dark .acc-menu-item {
     width: var(--acc-rail-width);
     min-width: var(--acc-rail-width);
     max-width: var(--acc-rail-width);
-    min-height: calc(100dvh - 85px);
-    height: calc(100dvh - 85px);
+    min-height: calc(100dvh - var(--app-chrome-h));
+    height: calc(100dvh - var(--app-chrome-h));
     overflow-x: hidden;
     overflow-y: auto;
     position: sticky;
@@ -439,8 +450,8 @@ html.dark .acc-menu-item {
   .acc-child-page {
     flex: 1;
     display: flex !important;
-    min-height: calc(100dvh - 85px);
-    height: calc(100dvh - 85px);
+    min-height: calc(100dvh - var(--app-chrome-h));
+    height: calc(100dvh - var(--app-chrome-h));
     overflow-y: auto;
     min-width: 0;
   }
@@ -491,5 +502,16 @@ html.dark .acc-menu-item {
 
   .acc-chevron {
     display: inline-block;
+  }
+}
+
+/* ── Tablet / iPad with Bottom Bar (769px to 992px) ─────────── */
+@media (min-width: 769px) and (max-width: 992px) {
+
+  .acc-shell,
+  .acc-menu-page,
+  .acc-child-page {
+    min-height: calc(100dvh - var(--app-chrome-h) - 60px) !important;
+    height: calc(100dvh - var(--app-chrome-h) - 60px) !important;
   }
 }

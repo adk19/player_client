@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
-const REQUEST_RESPONSE_SECRET = '2026-CRYPTO-Player-1713143';
+import { environment } from '../environment/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CryptoService {
   private keyPromise: Promise<CryptoKey> | null = null;
 
   private async deriveKey(): Promise<CryptoKey> {
-    const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(REQUEST_RESPONSE_SECRET));
+    if (!window.isSecureContext) {
+      throw new Error('Web Crypto API requires a secure context (HTTPS)');
+    }
+    const secret = (environment as any).REQUEST_RESPONSE_SECRET || '';
+    if (!secret) throw new Error('Encryption key not configured');
+    const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
     return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
   }
 

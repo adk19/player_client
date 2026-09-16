@@ -125,12 +125,19 @@ export class SharedService {
         document.body.appendChild(selBox);
         selBox.focus();
         selBox.select();
-        document.execCommand('copy');
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(val);
+            } else {
+                document.execCommand('copy');
+            }
+        } catch { }
         document.body.removeChild(selBox);
-        document.getElementById('copy-data-text').innerHTML = 'Copied!';
+        const el = document.getElementById('copy-data-text');
+        if (el) el.innerHTML = 'Copied!';
     }
 
-    openURL(url) {
+    openURL(url: string) {
         window.open(url, '_blank');
     }
 
@@ -140,8 +147,6 @@ export class SharedService {
             document.exitFullscreen();
         } else if ((document as any).webkitExitFullscreen) { /* Safari */
             (document as any).webkitExitFullscreen();
-        } else if ((document as any).msExitFullscreen) { /* IE11 */
-            (document as any).msExitFullscreen();
         }
         this.isFullscreen = false;
     }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../shared/services/auth.service';
@@ -107,12 +107,8 @@ export class AccountComponent implements OnInit, OnDestroy {
   private balanceSub?: Subscription;
 
   ngOnInit(): void {
-    try {
-      const rawUser = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
-      this.userName = rawUser?.username || '';
-    } catch {
-      this.userName = '';
-    }
+    const user = this.authService.currentUser;
+    this.userName = user?.userName || '';
 
     this.balance = this.authService.currentBalance;
     this.balanceSub = this.authService.balance$.subscribe((b) => {
@@ -175,7 +171,7 @@ export class AccountComponent implements OnInit, OnDestroy {
     const isRoot = url === '/account' || url === '/account/';
     const isDashboard = url === '/account/dashboard';
 
-    if (window.innerWidth <= 768) {
+    if (this.getDeviceWidth() <= 768) {
       this.isChildActive = !isRoot && !isDashboard;
     } else {
       this.isChildActive = true;
@@ -184,8 +180,17 @@ export class AccountComponent implements OnInit, OnDestroy {
     this.activeTitle = this.titleMap[url] || 'Account';
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateChildState();
+  }
+
+  private getDeviceWidth(): number {
+    return window.innerWidth;
+  }
+
   onMenuClick(): void {
-    if (window.innerWidth <= 768) {
+    if (this.getDeviceWidth() <= 768) {
       this.isChildActive = true;
     }
   }
