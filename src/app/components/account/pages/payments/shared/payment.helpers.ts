@@ -276,10 +276,13 @@ export function buildCryptoDepositRows(wallet: DepositWalletApi | null): Payment
 
   return rows;
 }
+const PAYOUT_META_SKIP = new Set([
+  'withdraw_proof_url'
+]);
 
 export function buildPayoutDetailRows(details: Record<string, string>): PaymentDetailRow[] {
   return Object.entries(details)
-    .filter(([, value]) => !!value?.trim())
+    .filter(([key, value]) => !!value?.trim() && !PAYOUT_META_SKIP.has(key))
     .map(([key, value]) => ({
       label: formatFieldLabel(key, PAYOUT_FIELD_LABELS),
       value: value.trim()

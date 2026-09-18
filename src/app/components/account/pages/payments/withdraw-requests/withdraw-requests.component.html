@@ -117,95 +117,104 @@
         @if (expandedRequestId === request.requestId) {
 
         <div class="dr-card__details">
-
-          <div class="dr-detail-row">
-
-            <span>Payment method</span>
-
-            <strong>{{ request.paymentMethodName }} ({{ request.paymentMethodCode }})</strong>
-
-          </div>
-
-          @for (row of detailRows(request); track row.label) {
-
-          <div class="dr-detail-row">
-
-            <span>{{ row.label }}</span>
-
-            <div>
-
-              <span class="dr-mono">{{ row.value }}</span>
-
-              <button type="button" (click)="copyText(row.value)"><i class="fa-light fa-copy"></i></button>
-
-            </div>
-
-          </div>
-
-          }
-
-          <div class="dr-detail-row">
-
-            <span>Requested at</span>
-
-            <strong>{{ formatDate(request.requestedAt) }}</strong>
-
-          </div>
-
-          <div class="dr-detail-row">
-
-            <span>Processed at</span>
-
-            <strong>{{ formatDate(request.processedAt) }}</strong>
-
-          </div>
-
-          @if (request.playerNote) {
-
-          <div class="dr-detail-row">
-
-            <span>Your note</span>
-
-            <strong>{{ request.playerNote }}</strong>
-
-          </div>
-
-          }
-
-          @if (request.adminNote) {
-
-          <div class="dr-detail-row">
-
-            <span>Admin note</span>
-
-            <strong>{{ request.adminNote }}</strong>
-
-          </div>
-          }
           
-          @if (mediaUrl(request.proofUrl); as proof) {
-          <div class="dr-proof">
-            <div class="dr-proof__head">
-              <span>Approval proof</span>
-              <a class="dr-proof__open" [href]="proof" target="_blank" rel="noopener noreferrer">
-                Open full size <i class="fa-light fa-arrow-up-right-from-square"></i>
-              </a>
+          <div class="dr-details-main">
+            <!-- Request overview -->
+            <div class="dr-section-box">
+              <div class="dr-section-box__head">
+                <i class="fa-light fa-file-invoice"></i>
+                <span>Request overview</span>
+              </div>
+              <div class="dr-section-box__body">
+                <div class="dr-section-row">
+                  <span>Requested on</span>
+                  <strong>{{ formatDate(request.requestedAt) }}</strong>
+                </div>
+                <div class="dr-section-row">
+                  <span>Processed on</span>
+                  <strong>{{ formatDate(request.processedAt) }}</strong>
+                </div>
+              </div>
             </div>
-            @if (isProofPdf(proof)) {
-            <a class="dr-proof__file" [href]="proof" target="_blank" rel="noopener noreferrer">
-              <i class="fa-light fa-file-pdf"></i>
-              <span>View PDF proof</span>
-            </a>
-            } @else {
-            <a class="dr-proof__frame" [href]="proof" target="_blank" rel="noopener noreferrer"
-              aria-label="Open approval proof full size">
-              <img [src]="proof" alt="Approval proof for request #{{ request.requestId }}" loading="lazy" />
-            </a>
+
+            <!-- Payment details -->
+            <div class="dr-section-box">
+              <div class="dr-section-box__head">
+                <i class="fa-light fa-wallet"></i>
+                <span>Payment details</span>
+              </div>
+              <div class="dr-section-box__body">
+                <div class="dr-section-row">
+                  <span>Payment method</span>
+                  <strong>{{ request.paymentMethodName }} ({{ request.paymentMethodCode }})</strong>
+                </div>
+                @for (row of detailRows(request); track row.label) {
+                <div class="dr-section-row">
+                  <span>{{ row.label }}</span>
+                  <div class="dr-section-row__val">
+                    <span class="dr-mono">{{ row.value }}</span>
+                    <button type="button" (click)="copyText(row.value)" aria-label="Copy"><i class="fa-light fa-copy"></i></button>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- Notes -->
+            @if (request.playerNote || request.adminNote) {
+            <div class="dr-section-box">
+              <div class="dr-section-box__head">
+                <i class="fa-light fa-file-lines"></i>
+                <span>Notes</span>
+              </div>
+              <div class="dr-section-box__body dr-section-box__body--col">
+                @if (request.playerNote) {
+                <div class="dr-section-note">
+                  <span>Your note</span>
+                  <strong>{{ request.playerNote }}</strong>
+                </div>
+                }
+                @if (request.adminNote) {
+                <div class="dr-section-note">
+                  <span>Admin note</span>
+                  <strong>{{ request.adminNote }}</strong>
+                </div>
+                }
+              </div>
+            </div>
             }
           </div>
-          }
 
-          @if (isPendingRequest(request)) {
+          <div class="dr-details-side">
+            @if (mediaUrl(request.proofUrl); as proof) {
+            <div class="dr-section-box">
+              <div class="dr-section-box__head">
+                <i class="fa-light fa-image"></i>
+                <span>Withdraw proof</span>
+              </div>
+              <div class="dr-section-box__body dr-section-box__body--center">
+                @if (isProofPdf(proof)) {
+                <a class="dr-proof__file" [href]="proof" target="_blank" rel="noopener noreferrer">
+                  <i class="fa-light fa-file-pdf"></i>
+                  <span>View PDF proof</span>
+                </a>
+                } @else {
+                <a class="dr-proof__frame" [href]="proof" target="_blank" rel="noopener noreferrer"
+                  aria-label="Open approval proof full size">
+                  <img [src]="proof" alt="Approval proof for request #{{ request.requestId }}" loading="lazy" />
+                </a>
+                <a class="dr-proof__open" [href]="proof" target="_blank" rel="noopener noreferrer">
+                  Click to view full size
+                </a>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+        </div>
+
+        @if (isPendingRequest(request)) {
 
           <div class="dr-card__actions" (click)="$event.stopPropagation()">
 
@@ -248,7 +257,6 @@
 
           </div>
           }
-        </div>
         }
       </article>
 
